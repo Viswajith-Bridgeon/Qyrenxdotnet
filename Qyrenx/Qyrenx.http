@@ -1,0 +1,6 @@
+@Qyrenx_HostAddress = http://localhost:5025
+
+GET {{Qyrenx_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
