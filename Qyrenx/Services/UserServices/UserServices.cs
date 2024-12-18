@@ -1,0 +1,180 @@
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Qyrenx.ApiResponses;
+using Qyrenx.ApplicationDbContext;
+using Qyrenx.Models.DTOs.UserDTO;
+using Qyrenx.Models.Entities;
+using Qyrenx.Services.EmailServices;
+
+namespace Qyrenx.Services.UserServices
+{
+    public class UserServices : IUserServices
+    {
+        private readonly QyrenxContext _mainDbContext;
+        private readonly IMapper _mapper;
+        private readonly IEmailServices _emailServices;
+
+        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices)
+        {
+            _mainDbContext = mainDbContext;
+            _mapper = mapper;
+            _emailServices = emailServices;
+        }
+
+        public async Task<string> registration(UserDto user)
+        {
+            try
+            {
+                var isExist = await _mainDbContext.Users.FirstOrDefaultAsync(e => e.Email == user.Email);
+
+                if (isExist != null)
+                {
+                    return "user already exict";
+                }
+
+                bool emailverify = _emailServices.verifyOtp(user.Email, user.otp);
+                if (emailverify)
+                {
+
+                    var haspassword = BCrypt.Net.BCrypt.HashPassword(user.HashPassword);
+                    user.HashPassword = haspassword;
+
+                    var u = new User
+                    {
+                        Name = user.Name,
+                        Email = user.Email,
+                        HashPassword = haspassword,
+                        Mobile = user.Mobile
+
+                    };
+                    //_mapper.Map<User>(user);
+                    _mainDbContext.Users.Add(u);
+                    await _mainDbContext.SaveChangesAsync();
+
+
+                    return "succesfully registered";
+                }
+                return "wrong otp";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+
+
+
+        public async Task<User> login(string email, string password)
+        {
+            try
+            {
+                var p = await _mainDbContext.Users.FirstOrDefaultAsync(e => e.Email == email);
+                if (p == null)
+                {
+                    return new User();
+                }
+                bool pass = BCrypt.Net.BCrypt.Verify(password, p.HashPassword);
+                if (!pass)
+                {
+                    return new User();
+
+                }
+                return p;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+
+        }
+
+
+
+
+        public async Task<List<UserViewDto>> GetUsers()
+        {
+            try
+            {
+                var u = await _mainDbContext.Users.Where(e => e.Role != "Admin").ToListAsync();
+                return _mapper.Map<List<UserViewDto>>(u);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+
+        }
+
+        public async Task<UserViewDto> GetUserById(Guid id)
+        {
+            try
+            {
+                var user = await _mainDbContext.Users.FindAsync(id);
+                if (user == null)
+                {
+                    return null;
+                }
+
+                return _mapper.Map<UserViewDto>(user);
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+
+        }
+
+
+
+
+        public async Task<ApiResponse<string>> BlockOrUnblock(Guid id)
+        {
+            try
+            {
+                var us = await _mainDbContext.Users.FindAsync(id);
+                if (us == null)
+                {
+                    return new ApiResponse<string>(404, "user is not found");
+                }
+                if (us.IsBlock)
+                {
+                    us.IsBlock = false;
+                    await _mainDbContext.SaveChangesAsync();
+                    return new ApiResponse<string>(200, "user is blocked");
+                }
+                else
+                {
+                    us.IsBlock = true;
+                    await _mainDbContext.SaveChangesAsync();
+                    return new ApiResponse<string>(200, "user is unblocked");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+
+
+
+
+        public async Task<List<UserViewDto>> SearchUsers(string name)
+        {
+            try
+            {
+                var users = await _mainDbContext.Users.Where(p => p.Name.ToLower().Contains(name.ToLower())).ToListAsync();
+                return _mapper.Map<List<UserViewDto>>(users);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+
+    }
+}
