@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Qyrenx")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a78076055bcaf29a9f24fb7d4a4dcf1a62fb0aab")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b8e9f3bf1d147f225dc9f0325329629d75a45e40")]
 [assembly: System.Reflection.AssemblyProductAttribute("Qyrenx")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Qyrenx")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
