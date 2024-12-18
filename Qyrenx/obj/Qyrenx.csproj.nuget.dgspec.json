@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\Qyrenx.csproj": {}
+    "C:\\Users\\offic\\Source\\Repos\\Qyrenxdotnet\\Qyrenx\\Qyrenx.csproj": {}
   },
   "projects": {
-    "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\Qyrenx.csproj": {
+    "C:\\Users\\offic\\Source\\Repos\\Qyrenxdotnet\\Qyrenx\\Qyrenx.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\Qyrenx.csproj",
+        "projectUniqueName": "C:\\Users\\offic\\Source\\Repos\\Qyrenxdotnet\\Qyrenx\\Qyrenx.csproj",
         "projectName": "Qyrenx",
-        "projectPath": "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\Qyrenx.csproj",
-        "packagesPath": "C:\\Users\\91949\\.nuget\\packages\\",
-        "outputPath": "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\obj\\",
+        "projectPath": "C:\\Users\\offic\\Source\\Repos\\Qyrenxdotnet\\Qyrenx\\Qyrenx.csproj",
+        "packagesPath": "C:\\Users\\offic\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\offic\\Source\\Repos\\Qyrenxdotnet\\Qyrenx\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\91949\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\offic\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -96,7 +96,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.402/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

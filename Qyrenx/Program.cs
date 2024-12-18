@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Qyrenx.ApplicationDbContext;
+using Qyrenx.Services.EmailServices;
+using Qyrenx.Services.UserServices;
 using System.Text;
 
 namespace Qyrenx
@@ -16,6 +18,12 @@ namespace Qyrenx
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+
+            builder.Services.AddScoped<IEmailServices,EmailServices>();
+            builder.Services.AddScoped<IUserServices,UserServices>();
+
+
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
