@@ -6,6 +6,8 @@ using Qyrenx.ApplicationDbContext;
 using Qyrenx.Services.DeliveryServices;
 using Qyrenx.Services.JwtServices;
 using System.Collections.Generic;
+using Qyrenx.Services.CloudinaryService;
+using Qyrenx.Services.VendorServices;
 using System.Text;
 
 namespace Qyrenx
@@ -19,9 +21,11 @@ namespace Qyrenx
             // Add services to the container.
 
             builder.Services.AddControllers();
-            builder.Services.AddScoped<IDeliveryService, DeliveryService>();
-            builder.Services.AddScoped<IJwtService, JwtService>();
-            builder.Services.AddAutoMapper(typeof(Program));
+			builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+			builder.Services.AddScoped<IJwtService, JwtService>();
+			builder.Services.AddScoped<IVendorServices, VendorService>();
+			builder.Services.AddScoped<ICloudinaryService, CloudinaryServices>();
+			builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
                         builder.Configuration.GetConnectionString("DefaultConnection"),
