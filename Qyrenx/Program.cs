@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Qyrenx.ApplicationDbContext;
+using Qyrenx.Services.CloudinaryService;
+using Qyrenx.Services.VendorServices;
 using System.Text;
 
 namespace Qyrenx
@@ -16,6 +18,10 @@ namespace Qyrenx
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.AddScoped<IVendorServices, VendorService>();
+            builder.Services.AddScoped<ICloudinaryService,CloudinaryServices>();
+
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
