@@ -21,7 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\DTOs\" />
     <Folder Include="Services\DeliveryServices\" />
+    <Folder Include="Services\VendorServices\" />
     <Folder Include="Services\UserServices\" />
   </ItemGroup>
 
