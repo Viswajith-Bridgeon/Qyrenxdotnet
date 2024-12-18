@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\Qyrenx.csproj": {}
+    "D:\\dotnet\\newFork\\Qyrenxdotnet\\Qyrenx\\Qyrenx.csproj": {}
   },
   "projects": {
-    "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\Qyrenx.csproj": {
+    "D:\\dotnet\\newFork\\Qyrenxdotnet\\Qyrenx\\Qyrenx.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\Qyrenx.csproj",
+        "projectUniqueName": "D:\\dotnet\\newFork\\Qyrenxdotnet\\Qyrenx\\Qyrenx.csproj",
         "projectName": "Qyrenx",
-        "projectPath": "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\Qyrenx.csproj",
+        "projectPath": "D:\\dotnet\\newFork\\Qyrenxdotnet\\Qyrenx\\Qyrenx.csproj",
         "packagesPath": "C:\\Users\\91949\\.nuget\\packages\\",
-        "outputPath": "D:\\dotnet\\mainproject\\Qyrenx\\Qyrenx\\obj\\",
+        "outputPath": "D:\\dotnet\\newFork\\Qyrenxdotnet\\Qyrenx\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\91949\\AppData\\Roaming\\NuGet\\NuGet.Config",

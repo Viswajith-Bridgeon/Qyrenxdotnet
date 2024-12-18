@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Qyrenx.ApplicationDbContext;
+using Qyrenx.Services.DeliveryServices;
+using Qyrenx.Services.JwtServices;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Qyrenx
@@ -16,6 +19,8 @@ namespace Qyrenx
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+            builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
@@ -24,7 +29,6 @@ namespace Qyrenx
                         mysqlOptions => mysqlOptions.EnableRetryOnFailure()));            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new() { Title = "Ecommerce API", Version = "v1" });
