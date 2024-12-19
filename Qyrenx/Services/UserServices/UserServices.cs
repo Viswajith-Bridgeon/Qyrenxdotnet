@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.ApiResponses;
 using Qyrenx.ApplicationDbContext;
@@ -174,6 +175,51 @@ namespace Qyrenx.Services.UserServices
                 throw new Exception(ex.InnerException?.Message ?? ex.Message);
             }
         }
+
+
+
+        public async Task<bool> Updateuser(Guid id, UserUpdateDto dto)
+        {
+            try
+            {
+                var user=await _mainDbContext.Users.FirstOrDefaultAsync(p => p.Id == id);
+                if (user == null)
+                {
+                    return false;
+                }
+                user.Name = dto.Name;
+                user.Mobile = dto.Mobile;
+                await _mainDbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+
+
+        public async Task<bool> ResetPassword(string Email, string password)
+        {
+            try
+            {
+                var user = await _mainDbContext.Users.FirstOrDefaultAsync(u => u.Email == Email);
+                if (user == null)
+                {
+                    return false;
+                }
+                var haspassword = BCrypt.Net.BCrypt.HashPassword(password);
+                user.HashPassword = haspassword;
+                await _mainDbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
 
 
     }

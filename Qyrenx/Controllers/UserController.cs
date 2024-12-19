@@ -6,10 +6,12 @@ using Qyrenx.ApiResponses;
 using Qyrenx.Models.DTOs.UserDTO;
 using Qyrenx.Models.Entities;
 using Qyrenx.Services.EmailServices;
+using Qyrenx.Services.JwtServices;
 using Qyrenx.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Qyrenx.Controllers
 {
@@ -21,14 +23,16 @@ namespace Qyrenx.Controllers
         private readonly IEmailServices _emailServices;
         private readonly IUserServices _userServices;
         private readonly IConfiguration _configuration;
+        public readonly IJwtService _jwtService;
 
 
-        public UserController( IConfiguration configuration,IUserServices userServices, IEmailServices emailServices )
+        public UserController( IConfiguration configuration,IUserServices userServices, IEmailServices emailServices , IJwtService jwtService )
         {
          
             _configuration = configuration;
             _userServices = userServices;
             _emailServices = emailServices;
+            _jwtService = jwtService;
         }
 
 
@@ -40,6 +44,7 @@ namespace Qyrenx.Controllers
             {
                
                 bool isotpset = await _emailServices.sendOtp(email);
+
                 var res = new ApiResponse<bool>(200, "otp sending", isotpset);
                 return Ok(res);
             }
@@ -73,7 +78,7 @@ namespace Qyrenx.Controllers
             }
             catch (Exception ex)
             {
-                var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
                 return StatusCode(500, r);
             }
         }
@@ -96,13 +101,14 @@ namespace Qyrenx.Controllers
                     var res = new ApiResponse<string>(404, "invalid email or password");
                     return StatusCode(res.StatusCode, res);
                 }
-                return Ok(new ApiResponse<object>(200,"successfully login", new { user.Name, user.Email, user.Role }) );
+                string token =  _jwtService.GenerateJwt(user.Id, user.Email, user.Role);
+                return Ok(new ApiResponse<object>(200,"successfully login", new { user.Name, user.Email, user.Role ,token}) );
 
 
             }
             catch (Exception ex)
             {
-                var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
                 return StatusCode(500, r);
             }
         }
@@ -120,7 +126,7 @@ namespace Qyrenx.Controllers
             }
             catch (Exception ex)
             {
-                var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
                 return StatusCode(500, r);
             }
         }
@@ -141,7 +147,7 @@ namespace Qyrenx.Controllers
             }
             catch (Exception ex)
             {
-                var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
                 return StatusCode(500, r);
             }
         }
@@ -157,7 +163,7 @@ namespace Qyrenx.Controllers
             }
             catch (Exception ex)
             {
-                var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
                 return StatusCode(500, r);
             }
         }
@@ -173,27 +179,118 @@ namespace Qyrenx.Controllers
             }
             catch (Exception ex)
             {
-                var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
                 return StatusCode(500, r);
             }
 
+        }
+
+        [HttpPut("UpdateUser{id}")]
+
+        public async Task<IActionResult> UpdateUser(Guid id, [FromForm] UserUpdateDto user)
+        {
+            try
+            {
+                bool res = await _userServices.Updateuser(id, user);
+                if (!res)
+                {
+                    var re = new ApiResponse<bool>(400, "Invalid userId", res);
+                    return StatusCode(400, re);
+                }
+                var r = new ApiResponse<bool>(200, "successfully updated", res);
+                return Ok(r);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
+
+
+        [HttpPost("Reset-Password-Otp")]
+
+        public async Task<IActionResult> ResetPasswordOtp(string email)
+        {
+            try
+            {
+
+                bool isotpset = await _emailServices.ResetPasswordOtp(email);
+                if (!isotpset)
+                {
+                    var r = new ApiResponse<bool>(404, "Invalid Email", isotpset);
+                    return NotFound(r);
+                }
+
+                var res = new ApiResponse<bool>(200, "otp sending", isotpset);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
+
+        [HttpPost("Reset-Password-Verify")]
+
+        public async Task<IActionResult> ResetPasswordVerify(string email,string otp)
+        {
+            try
+            {
+
+                bool isotpset =  _emailServices.verifyOtp(email, otp);
+                if (!isotpset)
+                {
+                    var r = new ApiResponse<bool>(404, "wrong otp", isotpset);
+                    return NotFound(r);
+                }
+
+                var res = new ApiResponse<bool>(200, "otp verified", isotpset);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
+        [HttpPatch("Reset-Password")]
+
+        public async Task<IActionResult> ResetPassword(string email, string Newpassword)
+        {
+            try
+            {
+                string passwordPattern = @"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+
+                if (!Regex.IsMatch(Newpassword, passwordPattern))
+                {
+                    return BadRequest(new { error = "Password does not meet complexity requirements." });
+                }
+
+                bool isPasswordset = await _userServices.ResetPassword(email, Newpassword);
+                if (!isPasswordset)
+                {
+                    var r = new ApiResponse<bool>(404, "User not exict", isPasswordset);
+                    return NotFound(r);
+                }
+
+                var res = new ApiResponse<bool>(200, "successfully reseted password", isPasswordset);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
         }
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-       
     }
 }

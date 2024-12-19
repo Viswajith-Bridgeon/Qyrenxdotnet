@@ -20,5 +20,9 @@ namespace Qyrenx.Services.UserServices
 
         Task<ApiResponse<string>> BlockOrUnblock(Guid id);
 
+        Task<bool> Updateuser(Guid id, UserUpdateDto user);
+
+
+        Task<bool>  ResetPassword(string Email, string password);
     }
 }

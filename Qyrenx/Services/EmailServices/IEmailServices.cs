@@ -7,5 +7,7 @@
 
         Task<bool> SendVerifiedmsg(string role,string name,string toAddress);
 
+        Task<bool>  ResetPasswordOtp(string email);
+
     }
 }
