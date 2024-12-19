@@ -4,6 +4,7 @@ using Qyrenx.ApiResponses;
 using Qyrenx.Models.DTOs.Deliverypersons;
 using Qyrenx.Models.Entities;
 using Qyrenx.Services.DeliveryServices;
+using Qyrenx.Services.EmailServices;
 
 namespace Qyrenx.Controllers
 {
@@ -12,9 +13,11 @@ namespace Qyrenx.Controllers
     public class DeliveryController : ControllerBase
     {
         private  readonly IDeliveryService _deliveryService;
-        public DeliveryController(IDeliveryService deliveryService)
+        private readonly IEmailServices _emailServices;
+        public DeliveryController(IDeliveryService deliveryService,IEmailServices emailServices)
         {
             _deliveryService = deliveryService;
+            _emailServices = emailServices;
         }
 
         [HttpPost]
@@ -89,7 +92,7 @@ namespace Qyrenx.Controllers
         [HttpPost("send otp")]
         public async Task<IActionResult> SendOtp(string mail)
         {
-            var otp = _deliveryService.SendOtp(mail);
+            var otp = _emailServices.sendOtp(mail);
             if (otp == null)
             {
                 return BadRequest(new ApiResponse<string>(404, "success!"));
@@ -99,7 +102,7 @@ namespace Qyrenx.Controllers
         [HttpPost("verify otp")]
         public async Task<IActionResult> Verify(string mail, string otp)
         {
-            var verification = await _deliveryService.VerifyOtp(mail, otp);
+            var verification =  _emailServices.verifyOtp(mail, otp);
             if (verification)
             {
                 return Ok(new ApiResponse<string>(200, "success"));

@@ -11,7 +11,6 @@ namespace Qyrenx.Services.DeliveryServices
         Task<IEnumerable<DeliveryPersonDto>>GetAllDeliveryPeresons();
         Task<DeliveryPersonDto> GetDeliveryPeresonById(Guid Id);
         Task<bool>BlockOrUnblock(Guid Id);
-        Task <bool> SendOtp(string mail);
-        Task<bool> VerifyOtp(string mail, string otp);
+     
     }
 }
