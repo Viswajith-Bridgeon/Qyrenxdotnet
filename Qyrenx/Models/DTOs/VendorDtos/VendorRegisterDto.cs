@@ -15,5 +15,7 @@ namespace Qyrenx.Models.DTOs.VendorDtos
 		public string? ShopeName { get; set; }
 		[Required]
 		public string? Password { get; set; }
+		public string? otp { get; set; }
+
 	}
 }
