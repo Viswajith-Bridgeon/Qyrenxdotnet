@@ -30,7 +30,17 @@ namespace Qyrenx
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IVendorServices, VendorService>();
             builder.Services.AddScoped<ICloudinaryService, CloudinaryServices>();
-            
+
+
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader());
+            });
+
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
                         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -97,6 +107,7 @@ namespace Qyrenx
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            app.UseCors();
             app.UseStaticFiles();
             app.UseHttpsRedirection();
 
