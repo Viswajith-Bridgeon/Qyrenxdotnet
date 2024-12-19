@@ -13,7 +13,6 @@
 
         public int Mobile { get; set; }
 
-
         public string HashPassword { get; set; }
         public bool IsBlock { get; set; } = false;
         public string Role { get; set; } = "User";
