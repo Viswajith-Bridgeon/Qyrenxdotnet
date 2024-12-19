@@ -2,9 +2,12 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.ApplicationDbContext;
+using Qyrenx.Models.DTOs.Deliverypersons;
 using Qyrenx.Models.DTOs.VendorDtos;
 using Qyrenx.Models.Entities;
 using Qyrenx.Services.CloudinaryService;
+using Qyrenx.Services.EmailServices;
+using Qyrenx.Services.JwtServices;
 
 namespace Qyrenx.Services.VendorServices
 {
@@ -14,12 +17,15 @@ namespace Qyrenx.Services.VendorServices
 		private readonly IMapper _mapper;
 		private readonly IConfiguration _configuration;
 		private readonly ICloudinaryService _cloudinaryService;
-
-        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper)
+		private readonly IJwtService _jwtService;
+		private readonly IEmailServices _emailServices;
+        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices)
         {
             _context = context;
 			_mapper = mapper;
 			_cloudinaryService= cloudinaryService;
+			_jwtService=jwtService;
+			_emailServices=emailServices;
         }
        
 
@@ -91,29 +97,58 @@ namespace Qyrenx.Services.VendorServices
 			return vendor.ToList();
 		}
 
-		public Task<VendorLoginView> LoginVendor(VendorLogin loginDto)
-		{
-			throw new NotImplementedException();
-		}
-
-		public async Task<bool> RegisterVendor(VendorRegisterDto registerDto, IFormFile shopelicense)
+		public async Task<VendorLoginView> LoginVendor(VendorLogin loginDto)
 		{
 			try
 			{
-				var license = await _cloudinaryService.UploadDocumentAsync(shopelicense);
+				var exist = await _context.Vendors.SingleOrDefaultAsync(p => p.Email == loginDto.Email);
+				if (exist != null)
+				{
+					if (BCrypt.Net.BCrypt.Verify(loginDto.Password, exist.HashPassword))
+					{
+						if (exist.IsVerified == true)
+						{
+							if (exist.IsBlock == false)
+							{
+								var token = _jwtService.GenerateJwt(exist.Id, exist.Email, exist.Role);
+								return new VendorLoginView { Name = exist.Name, Id = exist.Id, Token = token };
+							}
+							return new VendorLoginView { Error = "person is blocked " };
+						}
+						return new VendorLoginView { Error = "persons verification is pending!" };
+					}
+					return new VendorLoginView { Error = "enter valid credentials" };
+				}
+				return new VendorLoginView { Error = "no such vendor person is registered" };
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.InnerException.Message);
+			}
+		}
+
+		public async Task<string> RegisterVendor(VendorRegisterDto registerDto, IFormFile shopelicense)
+		{
+			try
+			{
 
 				var exist = await _context.Vendors.FirstOrDefaultAsync(c => c.Email == registerDto.Email);
 				if (exist != null)
 				{
-					return false;
+					return "vendor already exist";
 				}
-				var vendor = _mapper.Map<Vendor>(registerDto);
-				//vendor.Role = "Vendor";
-				vendor.HashPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
-				vendor.ShopeLicense = license;
-				_context.Vendors.Add(vendor);
-				await _context.SaveChangesAsync();
-				return true;
+				bool emailverify = _emailServices.verifyOtp(registerDto.Email, registerDto.otp);
+				if (emailverify)
+				{
+					var license = await _cloudinaryService.UploadDocumentAsync(shopelicense);
+					var vendor = _mapper.Map<Vendor>(registerDto);
+					vendor.HashPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+					vendor.ShopeLicense = license;
+					_context.Vendors.Add(vendor);
+					await _context.SaveChangesAsync();
+					return "registered successfully";
+				}
+				return "wrong otp";
 			}
 			catch (Exception ex)
 			{
@@ -168,6 +203,7 @@ namespace Qyrenx.Services.VendorServices
 				}
 				vendor.IsVerified= true;
 				await _context.SaveChangesAsync();
+				await _emailServices.SendVerifiedmsg(vendor.Role,vendor.Name,vendor.Email);
 				return true;
 			}
 			catch (Exception ex)

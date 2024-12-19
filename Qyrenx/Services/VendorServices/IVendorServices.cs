@@ -4,7 +4,7 @@ namespace Qyrenx.Services.VendorServices
 {
 	public interface IVendorServices
 	{
-		Task<bool> RegisterVendor(VendorRegisterDto registerDto, IFormFile shopelicense);
+		Task<string> RegisterVendor(VendorRegisterDto registerDto, IFormFile shopelicense);
 		Task<VendorLoginView> LoginVendor(VendorLogin loginDto);
 		Task<IEnumerable<VendorAdminViewDto>> GetVendor();
 		Task<IEnumerable<VendorAdminViewDto>> GetVendorNotVerified();

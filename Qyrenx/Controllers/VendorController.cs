@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Qyrenx.ApiResponses;
 using Qyrenx.Models.DTOs.VendorDtos;
+using Qyrenx.Models.Entities;
+using Qyrenx.Services.EmailServices;
 using Qyrenx.Services.VendorServices;
 
 namespace Qyrenx.Controllers
@@ -10,8 +13,9 @@ namespace Qyrenx.Controllers
     public class VendorController : ControllerBase
     {
         private readonly IVendorServices _vendorServices;
+		private readonly IEmailServices _emailServices;
 
-        public VendorController(IVendorServices vendorServices)
+        public VendorController(IVendorServices vendorServices,IEmailServices emailServices)
         {
             _vendorServices = vendorServices;
         }
@@ -131,17 +135,41 @@ namespace Qyrenx.Controllers
 		{
 			try
 			{
-				var vendore = await _vendorServices.RegisterVendor(vendorRegister, shopelicense);
-				if (vendore)
+				var res = await _vendorServices.RegisterVendor(vendorRegister, shopelicense);
+
+				if (res == "vendor already exist")
 				{
-					return Ok("Registeration Is In Verification");
+					var r = new ApiResponse<string>(409, "Vendor already exist");
+					return Conflict(r);
 				}
-				return Ok("There was an error in Registration");
+				if (res == "wrong otp")
+				{
+					var r = new ApiResponse<string>(400, "Wrong OTP");
+					return BadRequest(r);
+				}
+				return Ok(new ApiResponse<string>(200, res));
 			}
 			catch (Exception ex)
 			{
-				return BadRequest(ex.Message);
+				var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+				return StatusCode(500, r);
 			}
 		}
+
+		[HttpPost("login")]
+		public async Task<ActionResult<VendorLoginView>> Login(VendorLogin vendorLogin)
+		{
+			if (vendorLogin == null)
+			{
+				return BadRequest("Enter credentials");
+			}
+			var vendor = await _vendorServices.LoginVendor(vendorLogin);
+			if (vendor != null)
+			{
+				return Ok(vendor);
+			}
+			return NoContent();
+		}
+
 	}
 }

@@ -63,7 +63,7 @@ namespace Qyrenx.Services.DeliveryServices
                 {
                     if (BCrypt.Net.BCrypt.Verify(dto.Password, exist.HashPassword))
                     {
-                        if (exist.IsVerified == false)
+                        if (exist.IsVerified == true)
                         {
                             if (exist.IsBlock == false)
                             {
