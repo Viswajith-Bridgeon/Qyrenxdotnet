@@ -1,4 +1,5 @@
 ﻿using Qyrenx.Models.DTOs.Deliverypersons;
+using Qyrenx.Models.Entities;
 
 namespace Qyrenx.Services.DeliveryServices
 {
@@ -6,7 +7,11 @@ namespace Qyrenx.Services.DeliveryServices
     {
         Task<bool> Register(DeliveryPersonRegDto regdto);
         Task<DeliveryPersonLoginViewDto> Login(DeliveryPersonLoginDto logindto);
-        //Task<bool> verify(string mail);
-
+        Task<bool> verify(string mail);
+        Task<IEnumerable<DeliveryPersonDto>>GetAllDeliveryPeresons();
+        Task<DeliveryPersonDto> GetDeliveryPeresonById(Guid Id);
+        Task<bool>BlockOrUnblock(Guid Id);
+        Task <bool> SendOtp(string mail);
+        Task<bool> VerifyOtp(string mail, string otp);
     }
 }
