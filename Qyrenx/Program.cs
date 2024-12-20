@@ -33,14 +33,6 @@ namespace Qyrenx
 
 
 
-            builder.Services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(policy =>
-                    policy.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader());
-            });
-
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
                         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -107,7 +99,6 @@ namespace Qyrenx
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            app.UseCors();
             app.UseStaticFiles();
             app.UseHttpsRedirection();
 
