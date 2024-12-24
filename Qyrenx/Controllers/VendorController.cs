@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Qyrenx.ApiResponses;
-using Qyrenx.Models.DTOs.VendorDtos;
-using Qyrenx.Models.Entities;
-using Qyrenx.Services.EmailServices;
-using Qyrenx.Services.VendorServices;
+﻿
 
-namespace Qyrenx.Controllers
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Business.Services.VendorServices;
+using Qyrenx.Dataccess.ApiResponses;
+using Qyrenx.Dataccess.Models.DTOs.VendorDtos;
+
+namespace Qyrenx.present.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

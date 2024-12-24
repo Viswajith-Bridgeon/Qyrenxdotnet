@@ -1,15 +1,15 @@
 
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Qyrenx.ApplicationDbContext;
-using Qyrenx.Services.DeliveryServices;
-using Qyrenx.Services.JwtServices;
-using System.Collections.Generic;
-using Qyrenx.Services.CloudinaryService;
-using Qyrenx.Services.VendorServices;
-using Qyrenx.Services.EmailServices;
-using Qyrenx.Services.UserServices;
+using Qyrenx.Business.Services.CloudinaryService;
+using Qyrenx.Business.Services.DeliveryServices;
+using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Business.Services.JwtServices;
+using Qyrenx.Business.Services.UserServices;
+using Qyrenx.Business.Services.VendorServices;
+using Qyrenx.Dataccess.ApplicationDbContext;
 using System.Text;
 
 namespace Qyrenx
@@ -25,7 +25,7 @@ namespace Qyrenx
             builder.Services.AddControllers();
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddScoped<IEmailServices, EmailServices>();
-            builder.Services.AddScoped<IUserServices, UserServices>();
+            builder.Services.AddScoped<IUserServices,UserServices>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IVendorServices, VendorService>();
