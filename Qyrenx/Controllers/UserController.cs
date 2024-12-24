@@ -1,19 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿
+
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using Qyrenx.ApiResponses;
-using Qyrenx.Models.DTOs.UserDTO;
-using Qyrenx.Models.Entities;
-using Qyrenx.Services.EmailServices;
-using Qyrenx.Services.JwtServices;
-using Qyrenx.Services.UserServices;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Microsoft.Extensions.Configuration;
+using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Business.Services.JwtServices;
+using Qyrenx.Business.Services.UserServices;
+using Qyrenx.Dataccess.ApiResponses;
+using Qyrenx.Dataccess.Models.DTOs.UserDTO;
 using System.Text.RegularExpressions;
 
-namespace Qyrenx.Controllers
+namespace Qyrenx.present.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -287,10 +285,6 @@ namespace Qyrenx.Controllers
                 return StatusCode(500, r);
             }
         }
-
-
-
-
 
     }
 }
