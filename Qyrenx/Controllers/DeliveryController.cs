@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Qyrenx.Business.Models.DTOs.Deliverypersons;
 using Qyrenx.Business.Services.DeliveryServices;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApiResponses;
-using Qyrenx.Dataccess.Models.DTOs.Deliverypersons;
-
 namespace Qyrenx.present.Controllers
 {
     [Route("api/[controller]")]

@@ -1,7 +1,8 @@
 ﻿
 
 
-using Qyrenx.Dataccess.Models.DTOs.Deliverypersons;
+
+using Qyrenx.Business.Models.DTOs.Deliverypersons;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {

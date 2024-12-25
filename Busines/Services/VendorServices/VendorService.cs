@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Qyrenx.Business.Services.CloudinaryService;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Business.Services.JwtServices;
-using Qyrenx.Dataccess.ApplicationDbContext;
-using Qyrenx.Dataccess.Models.DTOs.VendorDtos;
+using Qyrenx.Business.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
+using Qyrenx.Business.Models.DTOs.VendorDtos;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -41,6 +41,7 @@ namespace Qyrenx.Business.Services.VendorServices
 				Mobile = v.Mobile,
 				Date = v.Date,
 				Email = v.Email,
+                IsBlock=v.IsBlock,
 			});
 			return vendor.ToList();
 		}
@@ -49,7 +50,7 @@ namespace Qyrenx.Business.Services.VendorServices
 		{
 			try
 			{
-				var exist = await _context.Vendors.FindAsync(id);
+				var exist = await _context.Vendors.FirstOrDefaultAsync(e=>e.Id==id);
 				if (exist == null)
 					return new VendorAdminViewDto { };
 				var vendor = _mapper.Map<VendorAdminViewDto>(exist);
@@ -57,7 +58,7 @@ namespace Qyrenx.Business.Services.VendorServices
 			}
 			catch (Exception ex)
 			{
-				throw new Exception("vendoreid is not valid");
+				throw new Exception(ex.Message);
 			}
 		}
 
@@ -77,6 +78,7 @@ namespace Qyrenx.Business.Services.VendorServices
 				Mobile = v.Mobile,
 				Date = v.Date,
 				Email = v.Email,
+                IsBlock= v.IsBlock,
 			});
 			return vendor.ToList();
 		}
@@ -93,6 +95,7 @@ namespace Qyrenx.Business.Services.VendorServices
 				Mobile = v.Mobile,
 				Date = v.Date,
 				Email = v.Email,
+                IsBlock= v.IsBlock,
 			});
 			return vendor.ToList();
 		}
@@ -159,7 +162,7 @@ namespace Qyrenx.Business.Services.VendorServices
 		{
 			try
 			{
-				var vendor = await _context.Vendors.FindAsync(id);
+				var vendor = await _context.Vendors.FirstOrDefaultAsync(e=>e.Id==id);
 				if (vendor == null)
 				{
 					return false;

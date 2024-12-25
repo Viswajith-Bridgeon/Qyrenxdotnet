@@ -1,11 +1,13 @@
-﻿using AutoMapper;
-
+﻿
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApiResponses;
-using Qyrenx.Dataccess.ApplicationDbContext;
-using Qyrenx.Dataccess.Models.DTOs.UserDTO;
+using Qyrenx.Business.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
+using Qyrenx.Business.Models.DTOs.UserDTO;
+
 
 namespace Qyrenx.Business.Services.UserServices
 {
@@ -14,7 +16,6 @@ namespace Qyrenx.Business.Services.UserServices
         private readonly QyrenxContext _mainDbContext;
         private readonly IMapper _mapper;
         private readonly IEmailServices _emailServices;
-
         public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices)
         {
             _mainDbContext = mainDbContext;
@@ -220,6 +221,5 @@ namespace Qyrenx.Business.Services.UserServices
             }
         }
 
-        
     }
 }

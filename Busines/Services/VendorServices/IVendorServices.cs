@@ -1,6 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Http;
-using Qyrenx.Dataccess.Models.DTOs.VendorDtos;
+using Qyrenx.Business.Models.DTOs.VendorDtos;
 
 namespace Qyrenx.Business.Services.VendorServices
 {

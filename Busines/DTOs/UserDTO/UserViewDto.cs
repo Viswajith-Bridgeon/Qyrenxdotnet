@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Qyrenx.Dataccess.Models.DTOs.UserDTO
+namespace Qyrenx.Business.Models.DTOs.UserDTO
 {
     public class UserViewDto
     {
