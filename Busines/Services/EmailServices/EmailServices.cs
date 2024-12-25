@@ -1,7 +1,7 @@
 ﻿using System.Net.Mail;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
-using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Business.ApplicationDbContext;
 
 namespace Qyrenx.Business.Services.EmailServices
 {

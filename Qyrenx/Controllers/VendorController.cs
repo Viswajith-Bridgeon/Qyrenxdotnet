@@ -2,10 +2,10 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Qyrenx.Business.Models.DTOs.VendorDtos;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Business.Services.VendorServices;
 using Qyrenx.Dataccess.ApiResponses;
-using Qyrenx.Dataccess.Models.DTOs.VendorDtos;
 
 namespace Qyrenx.present.Controllers
 {
@@ -113,7 +113,7 @@ namespace Qyrenx.present.Controllers
 			}
 			catch (Exception ex)
 			{
-				return NotFound();
+				return StatusCode(500,ex.Message);
 			}
 		}
 

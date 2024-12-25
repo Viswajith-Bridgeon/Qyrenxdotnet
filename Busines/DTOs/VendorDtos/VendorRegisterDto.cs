@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Qyrenx.Dataccess.Models.DTOs.VendorDtos
+namespace Qyrenx.Business.Models.DTOs.VendorDtos
 {
 	public class VendorRegisterDto
 	{

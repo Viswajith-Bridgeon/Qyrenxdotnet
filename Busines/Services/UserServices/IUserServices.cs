@@ -1,7 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+using Qyrenx.Business.Models.DTOs.UserDTO;
 using Qyrenx.Dataccess.ApiResponses;
-using Qyrenx.Dataccess.Models.DTOs.UserDTO;
 using Qyrenx.Dataccess.Models.Entities;
 
 

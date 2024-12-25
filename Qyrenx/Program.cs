@@ -9,8 +9,9 @@ using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Business.Services.UserServices;
 using Qyrenx.Business.Services.VendorServices;
-using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Business.ApplicationDbContext;
 using System.Text;
+using Qyrenx.Business.Mapper;
 
 namespace Qyrenx
 {
@@ -23,7 +24,7 @@ namespace Qyrenx
             // Add services to the container.
 
             builder.Services.AddControllers();
-            builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddAutoMapper(typeof(AutoMapping));
             builder.Services.AddScoped<IEmailServices, EmailServices>();
             builder.Services.AddScoped<IUserServices,UserServices>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();

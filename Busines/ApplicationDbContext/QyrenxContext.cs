@@ -4,7 +4,7 @@ using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.Dataccess.Models.Entities;
 
-namespace Qyrenx.Dataccess.ApplicationDbContext
+namespace Qyrenx.Business.ApplicationDbContext
 {
     public class QyrenxContext: DbContext
     {

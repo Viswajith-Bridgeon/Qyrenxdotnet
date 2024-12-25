@@ -4,11 +4,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Qyrenx.Business.Models.DTOs.UserDTO;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Business.Services.UserServices;
 using Qyrenx.Dataccess.ApiResponses;
-using Qyrenx.Dataccess.Models.DTOs.UserDTO;
 using System.Text.RegularExpressions;
 
 namespace Qyrenx.present.Controllers

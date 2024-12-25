@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Business.ApplicationDbContext;
 
 #nullable disable
 

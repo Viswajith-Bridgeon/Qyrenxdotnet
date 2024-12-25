@@ -5,14 +5,14 @@ using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Qyrenx.Business.Services.JwtServices;
-using Qyrenx.Dataccess.ApplicationDbContext;
-using Qyrenx.Dataccess.Models.DTOs.Deliverypersons;
+using Qyrenx.Business.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
 using System.Data.Entity;
+using Qyrenx.Business.Models.DTOs.Deliverypersons;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {
-    public class DeliveryService:IDeliveryService
+    public class DeliveryService: IDeliveryService
     {
         private readonly QyrenxContext _context;
         private readonly IConfiguration _configuration;
@@ -145,7 +145,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var deliveryperson=await _context.DeliveryPersons.FirstOrDefaultAsync(p=>p.Id==id);
+                var deliveryperson= _context.DeliveryPersons.FirstOrDefault(p=>p.Id==id);
                 if(deliveryperson != null)
                 {
                     return new DeliveryPersonDto

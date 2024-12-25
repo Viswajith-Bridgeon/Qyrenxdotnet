@@ -1,11 +1,12 @@
-﻿using AutoMapper;
-using Qyrenx.Dataccess.Models.DTOs.Deliverypersons;
-using Qyrenx.Dataccess.Models.DTOs.UserDTO;
-using Qyrenx.Dataccess.Models.DTOs.VendorDtos;
+﻿
+using AutoMapper;
+using Qyrenx.Business.Models.DTOs.Deliverypersons;
+using Qyrenx.Business.Models.DTOs.UserDTO;
+using Qyrenx.Business.Models.DTOs.VendorDtos;
 using Qyrenx.Dataccess.Models.Entities;
 
 
-namespace Qyrenx.Dataccess.Mapper
+namespace Qyrenx.Business.Mapper
 {
     public class AutoMapping:Profile
     {
@@ -13,6 +14,7 @@ namespace Qyrenx.Dataccess.Mapper
         {
             CreateMap<DeliveryPerson, DeliveryPersonRegDto>().ReverseMap();
             CreateMap<Vendor, VendorRegisterDto>().ReverseMap();
+            CreateMap<Vendor,VendorAdminViewDto>().ReverseMap();
             CreateMap<UserDto, User>().ReverseMap();
             CreateMap<UserViewDto, User>().ReverseMap();
         }

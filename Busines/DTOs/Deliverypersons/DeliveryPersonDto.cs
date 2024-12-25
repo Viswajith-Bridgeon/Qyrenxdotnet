@@ -1,4 +1,4 @@
-﻿namespace Qyrenx.Dataccess.Models.DTOs.Deliverypersons
+﻿namespace Qyrenx.Business.Models.DTOs.Deliverypersons
 {
     public class DeliveryPersonDto
     {
