@@ -9,7 +9,7 @@
         public string Image { get; set; }
         public string Description { get; set; }
         public virtual Service service {  get; set; }
-        public ICollection<User> users { get; set; }
+        public virtual User users { get; set; }
 
     }
 }

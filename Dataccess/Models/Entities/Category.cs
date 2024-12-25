@@ -6,5 +6,6 @@
         public string CategoryName { get; set; }
         public string Image { get; set; }
         public ICollection<Service> Services { get; set; }
+        public virtual Vendor Vendors { get; set; }
     }
 }

@@ -18,6 +18,5 @@
         public bool IsVerified { get; set; } = false;
         public string Role { get; set; } = "Vendor";
         public DateTime Date { get; set; }= DateTime.Now;
-        public ICollection<Category> Categories { get; set; }
     }
 }

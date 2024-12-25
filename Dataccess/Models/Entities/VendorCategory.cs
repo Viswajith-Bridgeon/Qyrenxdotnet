@@ -11,8 +11,6 @@ namespace Qyrenx.Dataccess.Models.Entities
         public Guid Id { get; set; }    
         public Guid VendorId{ get; set; }
         public Guid CategoryId { get; set; }
-        public ICollection<Vendor> Vendors { get; set; }
-        public ICollection<Category> Categories { get; set; }
-
+       
     }
 }
