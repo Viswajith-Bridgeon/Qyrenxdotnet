@@ -1,6 +1,6 @@
 ﻿namespace Qyrenx.Dataccess.Models.Entities
 {
-    public class Vendor
+    public class Vendor: AuditableEntity
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
@@ -17,6 +17,7 @@
         public bool IsBlock { get; set; } = false;
         public bool IsVerified { get; set; } = false;
         public string Role { get; set; } = "Vendor";
-        public DateTime Date { get; set; }= DateTime.Now;
+        public virtual Pickup Pickups { get; set; }
+        public ICollection<VendorPayment> VendorPayment { get; set; }
     }
 }

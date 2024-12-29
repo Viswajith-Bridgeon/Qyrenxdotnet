@@ -9,9 +9,9 @@ using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Business.Services.UserServices;
 using Qyrenx.Business.Services.VendorServices;
-using Qyrenx.Business.ApplicationDbContext;
 using System.Text;
 using Qyrenx.Business.Mapper;
+using Qyrenx.Dataccess.ApplicationDbContext;
 
 namespace Qyrenx
 {

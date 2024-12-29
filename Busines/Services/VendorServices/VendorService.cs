@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Qyrenx.Business.Services.CloudinaryService;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Business.Services.JwtServices;
-using Qyrenx.Business.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
+using Qyrenx.Dataccess.ApplicationDbContext;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -39,7 +39,6 @@ namespace Qyrenx.Business.Services.VendorServices
 				ShopeName = v.ShopeName,
 				ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
 				Mobile = v.Mobile,
-				Date = v.Date,
 				Email = v.Email,
                 IsBlock=v.IsBlock,
 			});
@@ -76,7 +75,6 @@ namespace Qyrenx.Business.Services.VendorServices
 				ShopeName = v.ShopeName,
 				ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
 				Mobile = v.Mobile,
-				Date = v.Date,
 				Email = v.Email,
                 IsBlock= v.IsBlock,
 			});
@@ -93,7 +91,6 @@ namespace Qyrenx.Business.Services.VendorServices
 				ShopeName = v.ShopeName,
 				ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
 				Mobile = v.Mobile,
-				Date = v.Date,
 				Email = v.Email,
                 IsBlock= v.IsBlock,
 			});

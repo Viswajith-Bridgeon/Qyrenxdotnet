@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 
 namespace Qyrenx.Dataccess.Models.Entities
 {
-    internal class VendorCategory
+    public class VendorCategory
     {
         public Guid Id { get; set; }    
         public Guid VendorId{ get; set; }
         public Guid CategoryId { get; set; }
+        public virtual Category Category { get; set; }
+        public virtual Vendor Vendor { get; set; }
        
     }
 }

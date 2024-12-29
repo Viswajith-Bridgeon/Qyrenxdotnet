@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApiResponses;
-using Qyrenx.Business.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
 using Qyrenx.Business.Models.DTOs.UserDTO;
+using Qyrenx.Dataccess.ApplicationDbContext;
 
 
 namespace Qyrenx.Business.Services.UserServices

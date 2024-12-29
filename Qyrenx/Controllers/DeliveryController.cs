@@ -18,9 +18,9 @@ namespace Qyrenx.present.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(DeliveryPersonRegDto regDto)
+        public async Task<IActionResult> Register([FromForm]DeliveryPersonRegDto regDto,IFormFile licence)
         {
-            var res = await _deliveryService.Register(regDto);
+            var res = await _deliveryService.Register(regDto,licence);
             if (res)
             {
                 return Ok(new ApiResponse <string> (200,"success!"));
@@ -28,7 +28,7 @@ namespace Qyrenx.present.Controllers
             return BadRequest(new ApiResponse<string>(400,"failed"));
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login(DeliveryPersonLoginDto loginViewDto)
+        public async Task<IActionResult> Login([FromForm] DeliveryPersonLoginDto loginViewDto)
         {
             if (loginViewDto == null)
             {

@@ -5,10 +5,12 @@ using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Qyrenx.Business.Services.JwtServices;
-using Qyrenx.Business.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
 using System.Data.Entity;
 using Qyrenx.Business.Models.DTOs.Deliverypersons;
+using Qyrenx.Business.Services.CloudinaryService;
+using Microsoft.AspNetCore.Http;
+using Qyrenx.Dataccess.ApplicationDbContext;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {
@@ -19,30 +21,32 @@ namespace Qyrenx.Business.Services.DeliveryServices
         private readonly IMapper _autoMapping;
         private readonly IJwtService _jwtServices;
         private readonly ILogger<DeliveryService> _logger;
-        public DeliveryService(QyrenxContext context, IConfiguration configuration, IMapper autoMapping,IJwtService jwtService,ILogger<DeliveryService> logger)
+        private readonly ICloudinaryService _cloudinaryService;
+        public DeliveryService(QyrenxContext context, IConfiguration configuration, IMapper autoMapping,IJwtService jwtService,ILogger<DeliveryService> logger,ICloudinaryService cloudinaryService)
         {
             _autoMapping = autoMapping;
             _context = context; 
             _configuration = configuration;
             _jwtServices = jwtService;  
             _logger = logger;
+            _cloudinaryService = cloudinaryService; 
             
         }
-        public async Task <bool> Register(DeliveryPersonRegDto dto)
+        public async Task <bool> Register(DeliveryPersonRegDto dto,IFormFile license)
         {
             try
             {
-                var exist = await _context.DeliveryPersons.FirstOrDefaultAsync(p => p.Email == dto.Email);
+                var exist =  _context.DeliveryPersons.FirstOrDefault(p => p.Email == dto.Email);
                 if (exist != null)
                 {
                     return false;
                 }
+                var lisemce = await _cloudinaryService.UploadDocumentAsync(license);
                 var mapdata = new DeliveryPerson
                 {
                     Name=dto.DeliveryPersonName,
                     Email=dto.Email,
-                    DeliveryLocationZipcode=dto.DeliveryLocationZipcode,
-                    DrivingLicense=dto.DrivingLicense,
+                    DrivingLicense= lisemce,
                     HashPassword= BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     Mobile=dto.Mobile
                 };
@@ -125,11 +129,9 @@ namespace Qyrenx.Business.Services.DeliveryServices
                         Name = p.Name,
                         IsBlock = p.IsBlock,
                         IsVerified = p.IsVerified,
-                        Date = p.Date,
-                        DeliveryLocationZipcode = p.DeliveryLocationZipcode,
                         Email = p.Email,
                         Mobile = p.Mobile,
-                        DrivingLicense = p.DrivingLicense,
+                        DrivingLicense = Path.ChangeExtension(p.DrivingLicense,".jpg"),
                         Role= p.Role
                     }).ToList();
                 }
@@ -153,9 +155,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
                         Id=deliveryperson.Id,
                         Name = deliveryperson.Name, 
                         IsBlock = deliveryperson.IsBlock,
-                        IsVerified = deliveryperson.IsVerified,
-                        Date = deliveryperson.Date,
-                        DeliveryLocationZipcode= deliveryperson.DeliveryLocationZipcode,
+                        IsVerified = deliveryperson.IsVerified,                      
                         Email = deliveryperson.Email,   
                         Mobile = deliveryperson.Mobile, 
                         DrivingLicense= deliveryperson.DrivingLicense,
