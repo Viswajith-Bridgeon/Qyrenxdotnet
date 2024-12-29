@@ -1,16 +1,17 @@
 
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Qyrenx.ApplicationDbContext;
-using Qyrenx.Services.DeliveryServices;
-using Qyrenx.Services.JwtServices;
-using System.Collections.Generic;
-using Qyrenx.Services.CloudinaryService;
-using Qyrenx.Services.VendorServices;
-using Qyrenx.Services.EmailServices;
-using Qyrenx.Services.UserServices;
+using Qyrenx.Business.Services.CloudinaryService;
+using Qyrenx.Business.Services.DeliveryServices;
+using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Business.Services.JwtServices;
+using Qyrenx.Business.Services.UserServices;
+using Qyrenx.Business.Services.VendorServices;
 using System.Text;
+using Qyrenx.Business.Mapper;
+using Qyrenx.Dataccess.ApplicationDbContext;
 
 namespace Qyrenx
 {
@@ -23,14 +24,16 @@ namespace Qyrenx
             // Add services to the container.
 
             builder.Services.AddControllers();
-            builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddAutoMapper(typeof(AutoMapping));
             builder.Services.AddScoped<IEmailServices, EmailServices>();
-            builder.Services.AddScoped<IUserServices, UserServices>();
+            builder.Services.AddScoped<IUserServices,UserServices>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IVendorServices, VendorService>();
             builder.Services.AddScoped<ICloudinaryService, CloudinaryServices>();
-            
+
+
+
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
                         builder.Configuration.GetConnectionString("DefaultConnection"),
