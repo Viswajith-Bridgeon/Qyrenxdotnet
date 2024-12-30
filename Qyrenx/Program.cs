@@ -12,6 +12,7 @@ using Qyrenx.Business.Services.VendorServices;
 using System.Text;
 using Qyrenx.Business.Mapper;
 using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Business.Services.CategoryServices;
 
 namespace Qyrenx
 {
@@ -31,7 +32,7 @@ namespace Qyrenx
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IVendorServices, VendorService>();
             builder.Services.AddScoped<ICloudinaryService, CloudinaryServices>();
-
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 
             builder.Services.AddDbContext<QyrenxContext>(options =>

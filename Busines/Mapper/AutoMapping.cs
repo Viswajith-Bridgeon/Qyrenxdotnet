@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using Qyrenx.Business.DTOs.CategoryDto;
 using Qyrenx.Business.Models.DTOs.Deliverypersons;
 using Qyrenx.Business.Models.DTOs.UserDTO;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
@@ -17,6 +18,7 @@ namespace Qyrenx.Business.Mapper
             CreateMap<Vendor,VendorAdminViewDto>().ReverseMap();
             CreateMap<UserDto, User>().ReverseMap();
             CreateMap<UserViewDto, User>().ReverseMap();
+            CreateMap<Category,CategoryAddDto>().ReverseMap();
         }
     }
 }
