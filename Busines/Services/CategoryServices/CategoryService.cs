@@ -6,7 +6,7 @@ using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,7 +29,7 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var res =  _context.Categories.ToList();  
+                var res = await _context.Categories.ToListAsync();  
                 var cat = _mapper.Map<IEnumerable<CategoryAddDto>>(res); 
                 return cat;
             }
@@ -69,7 +69,7 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var exist=  _context.Categories.FirstOrDefault(c=>c.CategoryId==id);
+                var exist=  await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
                 if(exist!=null)
                 {
                     _context.Categories.Remove(exist);
@@ -90,7 +90,7 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var exist =  _context.Categories.FirstOrDefault(c => c.CategoryId == id);
+                var exist = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
                 if (exist != null)
                 {
                     if (image != null && name != null)

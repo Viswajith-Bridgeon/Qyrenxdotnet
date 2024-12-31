@@ -10,10 +10,11 @@ namespace Qyrenx.Dataccess.Models.Entities
     {
         public Guid Id {  get; set; }
         public Guid UserId { get; set; }    
+        public string Role {  get; set; }
         public string House {  get; set; }
         public string City { get; set; }
         public string LandMark { get; set; }
         public string PostalCode { get; set; }
-        public virtual User Users { get; set; }
+    
     }
 }
