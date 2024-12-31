@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Qyrenx.Dataccess.ApplicationDbContext;
 
@@ -11,9 +12,11 @@ using Qyrenx.Dataccess.ApplicationDbContext;
 namespace Qyrenx.Dataccess.Migrations
 {
     [DbContext(typeof(QyrenxContext))]
-    partial class QyrenxContextModelSnapshot : ModelSnapshot
+    [Migration("20241231094845_address2")]
+    partial class address2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -84,7 +84,10 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
                 WithOne (p=>p.Pickup).
                 HasForeignKey<Status>(p => p.PickupId);
 
-           
+           modelBuilder.Entity<Address>().
+                HasMany(p=>p.Gadgets).
+                WithOne(p=>p.Address).
+                HasForeignKey (p=>p.AddressId);
             
 
 

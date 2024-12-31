@@ -13,6 +13,8 @@ using System.Text;
 using Qyrenx.Business.Mapper;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Business.Services.CategoryServices;
+using Qyrenx.CustomMidlleware;
+using Qyrenx.Business.Services.AddressServices;
 
 namespace Qyrenx
 {
@@ -33,6 +35,7 @@ namespace Qyrenx
             builder.Services.AddScoped<IVendorServices, VendorService>();
             builder.Services.AddScoped<ICloudinaryService, CloudinaryServices>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IAddressServices, AddressServices>();
 
 
             builder.Services.AddDbContext<QyrenxContext>(options =>
@@ -106,6 +109,7 @@ namespace Qyrenx
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<IdAcessMiddleware>();
 
 
             app.MapControllers();
