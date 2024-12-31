@@ -15,6 +15,7 @@ namespace Qyrenx.Dataccess.Models.Entities
         public string City { get; set; }
         public string LandMark { get; set; }
         public string PostalCode { get; set; }
+        public ICollection<Gadget> Gadgets { get; set; }
     
     }
 }
