@@ -1,12 +1,11 @@
 ﻿
 
 using AutoMapper;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Dataccess.Models.Entities;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.Models.DTOs.Deliverypersons;
 using Qyrenx.Business.Services.CloudinaryService;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +35,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var exist =  _context.DeliveryPersons.FirstOrDefault(p => p.Email == dto.Email);
+                var exist =  await _context.DeliveryPersons.FirstOrDefaultAsync(p => p.Email == dto.Email);
                 if (exist != null)
                 {
                     return false;

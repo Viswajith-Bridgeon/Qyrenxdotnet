@@ -46,6 +46,13 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
                 Mobile = 1234567890,
             });
 
+
+            modelBuilder.Entity<User>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<DeliveryPerson>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<Vendor>().
+                HasQueryFilter(p => !p.IsDelete);
             modelBuilder.Entity<Pickup>()
                  .HasOne(p => p.DeliveryPersons)
                  .WithMany(p => p.Pickups)
@@ -77,6 +84,7 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
                 WithOne (p=>p.Pickup).
                 HasForeignKey<Status>(p => p.PickupId);
 
+           
             
 
 

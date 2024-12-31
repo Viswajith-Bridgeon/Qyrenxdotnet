@@ -3,7 +3,6 @@
     public class DeliveryPersonDto
     {
         public Guid Id { get; set; }
-        public int DeliveryLocationZipcode { get; set; }
         public string Name { get; set; }
         public string DrivingLicense { get; set; }
         public string Email { get; set; }

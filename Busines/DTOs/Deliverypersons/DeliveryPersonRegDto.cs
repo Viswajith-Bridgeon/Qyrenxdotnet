@@ -5,9 +5,6 @@ namespace Qyrenx.Business.Models.DTOs.Deliverypersons
     public class DeliveryPersonRegDto
     {
         [Required]
-        public int DeliveryLocationZipcode { get; set; }
-        [Required]
-
         public string DeliveryPersonName { get; set; }
 
         [Required]
