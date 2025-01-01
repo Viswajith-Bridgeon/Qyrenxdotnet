@@ -7,6 +7,7 @@ using Qyrenx.Dataccess.ApiResponses;
 using Qyrenx.Dataccess.Models.Entities;
 using Qyrenx.Business.Models.DTOs.UserDTO;
 using Qyrenx.Dataccess.ApplicationDbContext;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 
 namespace Qyrenx.Business.Services.UserServices

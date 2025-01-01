@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.Models.DTOs.Deliverypersons;
 using Qyrenx.Business.Services.DeliveryServices;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApiResponses;
+using Qyrenx.Dataccess.Models.Entities;
 namespace Qyrenx.present.Controllers
 {
     [Route("api/[controller]")]
@@ -106,5 +108,30 @@ namespace Qyrenx.present.Controllers
             }
             return BadRequest(new ApiResponse<string>(404,"error in verification"));
         }
+
+
+        [HttpGet("getalldeliverypersononline")]
+        public async Task<ActionResult<List<DeliveryPersonOnlineDto>>> GetDeliveryPersonsOnline()
+        {
+            var data= await _deliveryService.GetAllDeliveryPersonOnline();
+            if (data == null)
+            {
+                return BadRequest(new ApiResponse<string>(404,"notfound"));
+            }
+            return Ok(new ApiResponse<List<DeliveryPersonOnlineDto>>(200,"success",data,null));
+        }
+
+        [HttpGet("getDeliverpersonActivity")]
+        public async Task<ActionResult<DeliveryPersonOnline>>GetDeliveryPersonActivity(Guid id,decimal lat,decimal lon)
+        {
+            var data=await _deliveryService.DeliveryPersonActivity(id,lat,lon); 
+            if(data == null)
+            {
+                return BadRequest(new ApiResponse<string>(404, "failed!"));
+            }
+            return Ok(new ApiResponse<DeliveryPersonOnline>(200,"success",data,null));
+        }
+
+
     }
 }

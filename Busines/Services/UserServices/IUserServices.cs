@@ -24,7 +24,7 @@ namespace Qyrenx.Business.Services.UserServices
 
         Task<bool> Updateuser(Guid id, UserUpdateDto user);
 
-
         Task<bool>  ResetPassword(string Email, string password);
+        //Task<bool>SelectDeliveryPerson(Guid id);
     }
 }

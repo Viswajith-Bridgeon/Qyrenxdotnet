@@ -10,6 +10,7 @@ using Qyrenx.Business.Models.DTOs.Deliverypersons;
 using Qyrenx.Business.Services.CloudinaryService;
 using Microsoft.AspNetCore.Http;
 using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Business.DTOs.Deliverypersons;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {
@@ -189,8 +190,76 @@ namespace Qyrenx.Business.Services.DeliveryServices
             }
            
         }
+        public async Task <DeliveryPersonOnline>DeliveryPersonActivity(Guid id,decimal latt,decimal lonn)
+        {
+            try
+            {
+                var user = await _context.DeliveryPersons.FirstOrDefaultAsync(p => p.Id == id);
+                var useronline = await _context.DeliveryPersonOnlines.FirstOrDefaultAsync(p => p.DeliveryPersonId == user.Id);
+                if (useronline != null)
+                {
+                    useronline.IsActive = false;
+                    await _context.SaveChangesAsync();
+                }
+                else if (useronline == null)
+                {
+                    var usernew = new DeliveryPersonOnline
+                    {
+                        DeliveryPersonId = user.Id,
+                        IsActive = false,
+                        Lat = latt,
+                        Long = lonn,
+                    };
+                    return usernew;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+        public async Task<List<DeliveryPersonOnlineDto>> GetAllDeliveryPersonOnline()
+        {
+            try
+            {
+                var user = _context.DeliveryPersonOnlines;
+                if(user != null)
+                {
+                    return user.Select(p => new DeliveryPersonOnlineDto
+                    {
+                        DeliveryPersonId= p.Id,
+                        IsActive = p.IsActive,
+                        Lat = p.Lat,
+                        Long = p.Long
+                    }).ToList();
+                }
+                return new List<DeliveryPersonOnlineDto>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+        public async Task<List<DeliveryPersonOnlineDto>> GetActiveDeliveryPersons()
+        {
+            var user = await _context.DeliveryPersonOnlines.Where(p=>p.IsActive==true).ToListAsync();
+            if(user != null)
+            {
+                return user.Select(p=>new DeliveryPersonOnlineDto
+                {
+                    DeliveryPersonId = p.Id,
+                    IsActive = p.IsActive,
+                    Lat = p.Lat,
+                    Long = p.Long
+                }).ToList();
+            }
+            return new List<DeliveryPersonOnlineDto>();
+        }
 
-        
+
+
+
     }
 }
        
