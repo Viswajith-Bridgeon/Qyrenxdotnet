@@ -3,7 +3,9 @@
 
 
 using Microsoft.AspNetCore.Http;
+using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.Models.DTOs.Deliverypersons;
+using Qyrenx.Dataccess.Models.Entities;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {
@@ -15,6 +17,10 @@ namespace Qyrenx.Business.Services.DeliveryServices
         Task<IEnumerable<DeliveryPersonDto>>GetAllDeliveryPeresons();
         Task<DeliveryPersonDto> GetDeliveryPeresonById(Guid Id);
         Task<bool>BlockOrUnblock(Guid Id);
+        Task<DeliveryPersonOnline> DeliveryPersonActivity(Guid id,decimal latt, decimal lonn);
+        Task<List<DeliveryPersonOnlineDto>> GetAllDeliveryPersonOnline();
+        Task<List<DeliveryPersonOnlineDto>> GetActiveDeliveryPersons();
+
      
     }
 }

@@ -27,7 +27,7 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
         public DbSet<Address> Address { get; set; }
         public DbSet<Status> Status { get; set; }
         public DbSet<PaymentToUser> PaymentToUsers { get; set; }
-        public DbSet<UserPayment> UserPayment { get; set; }
+        public DbSet<UserSecurityPayment> UserPayment { get; set; }
         public DbSet<VendorPayment> VendorPayment { get; set; } 
         public DbSet<AccountsVendorDelivery> AccountsVendorDeliveries { get; set; }
 
@@ -88,7 +88,37 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
                 HasMany(p=>p.Gadgets).
                 WithOne(p=>p.Address).
                 HasForeignKey (p=>p.AddressId);
-            
+
+            modelBuilder.Entity<UserSecurityPayment>().
+                Property(t=>t.SecurityAmount).
+                HasPrecision(18,2);
+
+            modelBuilder.Entity<OrderGadget>().
+                Property(t=>t.price).
+                HasPrecision(18,2);
+
+
+            modelBuilder.Entity<User>().
+                HasMany(p=>p.UserSecurityPayment).
+                WithOne(u=>u.Users).
+                HasForeignKey(u=>u.UserId);
+
+            modelBuilder.Entity<UserSecurityPayment>().
+                HasMany(p => p.orderGadgets).
+                WithOne(p => p.UserPayment).
+                HasForeignKey(p => p.PaymentId);
+
+            modelBuilder.Entity<OrderGadget>().
+                HasOne(p=>p.Gadget).
+                WithOne(p=>p.OrderGadget).
+                HasForeignKey<Gadget>(p=>p.Id);
+
+
+            modelBuilder.Entity<UserSecurityPayment>()
+                 .HasOne(usp => usp.Gadgets)
+                 .WithOne(g => g.UserSecurityPayment)
+                 .HasForeignKey<UserSecurityPayment>(usp => usp.TransactionId)
+                 .HasPrincipalKey<Gadget>(g => g.TransactionId);
 
 
             //modelBuilder.Entity<DeliveryPersonPayment>().
@@ -102,7 +132,7 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
             //    WithOne(p=>p.Vendor);
 
 
-                
+
 
 
         }
