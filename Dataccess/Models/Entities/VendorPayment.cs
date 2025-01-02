@@ -9,9 +9,9 @@ namespace Qyrenx.Dataccess.Models.Entities
     public class VendorPayment:AuditableEntity
     {
         public Guid Id { get; set; }
-        public Guid PickId { get; set; }
+        public Guid VendorCostId { get; set; }
         public decimal Payment {  get; set; }
-        public virtual Vendor  Vendor { get; set; }
+        public virtual VendorCost VendorCost { get; set; }
 
     }
 }

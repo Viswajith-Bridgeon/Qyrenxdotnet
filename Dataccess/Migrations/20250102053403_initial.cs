@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Qyrenx.Dataccess.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,7 +32,7 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -49,12 +49,38 @@ namespace Qyrenx.Dataccess.Migrations
                     CategoryId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CategoryName = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    CategoryDescription = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Image = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.CategoryId);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryPersonPayment",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    DeliveryPersonId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    SalaryStatus = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    BonusStatus = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    CreatedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    DeletedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryPersonPayment", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -75,7 +101,6 @@ namespace Qyrenx.Dataccess.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Role = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsBlock = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsVerified = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
@@ -84,7 +109,7 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -108,7 +133,7 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -139,7 +164,7 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -163,6 +188,8 @@ namespace Qyrenx.Dataccess.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ShopeLicense = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    OpeningTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    ClosingTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     HashPassword = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsBlock = table.Column<bool>(type: "tinyint(1)", nullable: false),
@@ -175,7 +202,7 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -202,38 +229,7 @@ namespace Qyrenx.Dataccess.Migrations
                         name: "FK_DeliveryPersonOnlines_DeliveryPersons_DeliveryPersonId",
                         column: x => x.DeliveryPersonId,
                         principalTable: "DeliveryPersons",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "deliveryPersonPayments",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    DeliveryPersonId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    SalaryStatus = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    BonusStatus = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    CreatedBy = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
-                    DeletedBy = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_deliveryPersonPayments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_deliveryPersonPayments_DeliveryPersons_DeliveryPersonId",
-                        column: x => x.DeliveryPersonId,
-                        principalTable: "DeliveryPersons",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -243,6 +239,8 @@ namespace Qyrenx.Dataccess.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Role = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     House = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     City = table.Column<string>(type: "longtext", nullable: false)
@@ -257,7 +255,7 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -268,23 +266,20 @@ namespace Qyrenx.Dataccess.Migrations
                         name: "FK_Address_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Gadgets",
+                name: "UserPayment",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    CategoryId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    GadgetName = table.Column<string>(type: "longtext", nullable: false)
+                    SecurityAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PaymentString = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Image = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Description = table.Column<string>(type: "longtext", nullable: false)
+                    TransactionId = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -292,23 +287,55 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Gadgets", x => x.Id);
+                    table.PrimaryKey("PK_UserPayment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Gadgets_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "CategoryId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Gadgets_Users_UserId",
+                        name: "FK_UserPayment_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "VendorAddresses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    VendorId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Role = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    House = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    City = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LandMark = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PostalCode = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    CreatedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    DeletedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VendorAddresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VendorAddresses_Vendors_VendorId",
+                        column: x => x.VendorId,
+                        principalTable: "Vendors",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -320,7 +347,16 @@ namespace Qyrenx.Dataccess.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     VendorId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    CategoryId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                    CategoryId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    CreatedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    DeletedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -341,32 +377,76 @@ namespace Qyrenx.Dataccess.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "VendorPayment",
+                name: "Gadgets",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    PickId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    Payment = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
-                    VendorId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    CategoryId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    GadgetName = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Image = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    AddressId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Description = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_VendorPayment", x => x.Id);
+                    table.PrimaryKey("PK_Gadgets", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_VendorPayment_Vendors_VendorId",
-                        column: x => x.VendorId,
-                        principalTable: "Vendors",
+                        name: "FK_Gadgets_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Gadgets_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "CategoryId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Gadgets_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "OrderGadgets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    PaymentId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    GadgetId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderGadgets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderGadgets_Gadgets_GadgetId",
+                        column: x => x.GadgetId,
+                        principalTable: "Gadgets",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderGadgets_UserPayment_PaymentId",
+                        column: x => x.PaymentId,
+                        principalTable: "UserPayment",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -376,7 +456,6 @@ namespace Qyrenx.Dataccess.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     GadgetId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    StatusId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     VendorId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     DeliveryPersonId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
@@ -385,7 +464,7 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -396,8 +475,7 @@ namespace Qyrenx.Dataccess.Migrations
                         name: "FK_Pickups_DeliveryPersons_DeliveryPersonId",
                         column: x => x.DeliveryPersonId,
                         principalTable: "DeliveryPersons",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Pickups_Gadgets_GadgetId",
                         column: x => x.GadgetId,
@@ -408,8 +486,7 @@ namespace Qyrenx.Dataccess.Migrations
                         name: "FK_Pickups_Vendors_VendorId",
                         column: x => x.VendorId,
                         principalTable: "Vendors",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -427,7 +504,7 @@ namespace Qyrenx.Dataccess.Migrations
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -438,8 +515,7 @@ namespace Qyrenx.Dataccess.Migrations
                         name: "FK_Status_Pickups_PickupId",
                         column: x => x.PickupId,
                         principalTable: "Pickups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -452,14 +528,17 @@ namespace Qyrenx.Dataccess.Migrations
                     VendorId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     ProblemDescription = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Cost = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    IsServiceable = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    ServiceCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SaleCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    VendorsCostId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -473,46 +552,43 @@ namespace Qyrenx.Dataccess.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_VendorCost_VendorCost_VendorsCostId",
+                        column: x => x.VendorsCostId,
+                        principalTable: "VendorCost",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_VendorCost_Vendors_VendorId",
                         column: x => x.VendorId,
                         principalTable: "Vendors",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "UserPayment",
+                name: "VendorPayment",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    StatusId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    SecurityAmount = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
-                    OriginalAmount = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    VendorCostId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Payment = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UpdatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DeletedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserPayment", x => x.Id);
+                    table.PrimaryKey("PK_VendorPayment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserPayment_Status_StatusId",
-                        column: x => x.StatusId,
-                        principalTable: "Status",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserPayment_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
+                        name: "FK_VendorPayment_VendorCost_VendorCostId",
+                        column: x => x.VendorCostId,
+                        principalTable: "VendorCost",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -521,7 +597,7 @@ namespace Qyrenx.Dataccess.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedBy", "CreatedOn", "DeletedBy", "Email", "HashPassword", "IsBlock", "IsDelete", "Mobile", "Name", "Role", "UpdatedBy", "UpdatedOn" },
-                values: new object[] { new Guid("a1f5d5da-e94d-44f1-a8c3-b60f42101a01"), null, new DateTime(2024, 12, 29, 23, 13, 28, 284, DateTimeKind.Local).AddTicks(7452), null, "admin@gmail.com", "$2a$11$3V7wPzRE/BYpq0rj55tzIONecl0d09ICSl3auOjDP4/zhB32VzxsO", false, false, 1234567890, "Admin", "Admin", null, null });
+                values: new object[] { new Guid("a1f5d5da-e94d-44f1-a8c3-b60f42101a01"), null, new DateTime(2025, 1, 2, 11, 4, 2, 560, DateTimeKind.Local).AddTicks(3966), null, "admin@gmail.com", "$2a$11$q5wBlJLWVy6JVydzy4dCpuA6ga6vgxnZe7MA7di6q7UgseAjuWwnG", false, false, 1234567890, "Admin", "Admin", null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Address_UserId",
@@ -535,10 +611,9 @@ namespace Qyrenx.Dataccess.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_deliveryPersonPayments_DeliveryPersonId",
-                table: "deliveryPersonPayments",
-                column: "DeliveryPersonId",
-                unique: true);
+                name: "IX_Gadgets_AddressId",
+                table: "Gadgets",
+                column: "AddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Gadgets_CategoryId",
@@ -549,6 +624,18 @@ namespace Qyrenx.Dataccess.Migrations
                 name: "IX_Gadgets_UserId",
                 table: "Gadgets",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderGadgets_GadgetId",
+                table: "OrderGadgets",
+                column: "GadgetId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderGadgets_PaymentId",
+                table: "OrderGadgets",
+                column: "PaymentId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pickups_DeliveryPersonId",
@@ -564,24 +651,23 @@ namespace Qyrenx.Dataccess.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Pickups_VendorId",
                 table: "Pickups",
-                column: "VendorId",
-                unique: true);
+                column: "VendorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Status_PickupId",
                 table: "Status",
-                column: "PickupId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserPayment_StatusId",
-                table: "UserPayment",
-                column: "StatusId");
+                column: "PickupId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserPayment_UserId",
                 table: "UserPayment",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VendorAddresses_VendorId",
+                table: "VendorAddresses",
+                column: "VendorId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_VendorCategories_CategoryId",
@@ -596,7 +682,8 @@ namespace Qyrenx.Dataccess.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_VendorCost_PickupId",
                 table: "VendorCost",
-                column: "PickupId");
+                column: "PickupId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_VendorCost_VendorId",
@@ -604,9 +691,14 @@ namespace Qyrenx.Dataccess.Migrations
                 column: "VendorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VendorPayment_VendorId",
+                name: "IX_VendorCost_VendorsCostId",
+                table: "VendorCost",
+                column: "VendorsCostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VendorPayment_VendorCostId",
                 table: "VendorPayment",
-                column: "VendorId");
+                column: "VendorCostId");
         }
 
         /// <inheritdoc />
@@ -616,31 +708,34 @@ namespace Qyrenx.Dataccess.Migrations
                 name: "AccountsVendorDeliveries");
 
             migrationBuilder.DropTable(
-                name: "Address");
-
-            migrationBuilder.DropTable(
                 name: "DeliveryPersonOnlines");
 
             migrationBuilder.DropTable(
-                name: "deliveryPersonPayments");
+                name: "DeliveryPersonPayment");
+
+            migrationBuilder.DropTable(
+                name: "OrderGadgets");
 
             migrationBuilder.DropTable(
                 name: "PaymentToUsers");
 
             migrationBuilder.DropTable(
-                name: "UserPayment");
+                name: "Status");
+
+            migrationBuilder.DropTable(
+                name: "VendorAddresses");
 
             migrationBuilder.DropTable(
                 name: "VendorCategories");
 
             migrationBuilder.DropTable(
-                name: "VendorCost");
-
-            migrationBuilder.DropTable(
                 name: "VendorPayment");
 
             migrationBuilder.DropTable(
-                name: "Status");
+                name: "UserPayment");
+
+            migrationBuilder.DropTable(
+                name: "VendorCost");
 
             migrationBuilder.DropTable(
                 name: "Pickups");
@@ -653,6 +748,9 @@ namespace Qyrenx.Dataccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "Vendors");
+
+            migrationBuilder.DropTable(
+                name: "Address");
 
             migrationBuilder.DropTable(
                 name: "Categories");

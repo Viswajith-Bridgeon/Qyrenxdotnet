@@ -15,7 +15,7 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
         public DbSet<User> Users { get; set; }
         public DbSet<DeliveryPerson> DeliveryPersons { get; set; }
         public DbSet<DeliveryPersonOnline>DeliveryPersonOnlines { get; set; }
-        public DbSet<DeliveryPersonPayment> deliveryPersonPayments { get; set; }
+        //public DbSet<DeliveryPersonPayment> deliveryPersonPayments { get; set; }
 
         public DbSet<Vendor> Vendors { get; set; }
         public DbSet<VendorCategory> VendorCategories { get; set; }
@@ -25,12 +25,13 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
         public DbSet<Gadget> Gadgets { get; set; }
         public DbSet<Pickup> Pickups { get; set; }
         public DbSet<Address> Address { get; set; }
+        public DbSet<VendorAddress> VendorAddresses { get; set; }
         public DbSet<Status> Status { get; set; }
         public DbSet<PaymentToUser> PaymentToUsers { get; set; }
         public DbSet<UserSecurityPayment> UserPayment { get; set; }
         public DbSet<VendorPayment> VendorPayment { get; set; } 
         public DbSet<AccountsVendorDelivery> AccountsVendorDeliveries { get; set; }
-
+        public DbSet<OrderGadget> OrderGadgets { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,41 +54,107 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
                 HasQueryFilter(p => !p.IsDelete);
             modelBuilder.Entity<Vendor>().
                 HasQueryFilter(p => !p.IsDelete);
-            modelBuilder.Entity<Pickup>()
-                 .HasOne(p => p.DeliveryPersons)
-                 .WithMany(p => p.Pickups)
-                 .HasForeignKey(p => p.DeliveryPersonId);
+            modelBuilder.Entity<Address>().
+                HasQueryFilter(p=> !p.IsDelete);
+            modelBuilder.Entity<Pickup>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<VendorPayment>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<Gadget>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<VendorAddress>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<Status>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<AccountsVendorDelivery>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<DeliveryPersonPayment>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<PaymentToUser>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<VendorCategory>().
+                HasQueryFilter(p => !p.IsDelete);
+            modelBuilder.Entity<VendorCost>().
+                HasQueryFilter(p => !p.IsDelete);
+
+            //----------------------------------------------------------USER-----------------------------------------------------------
+            //User Gadget----------------------------------
+            modelBuilder.Entity<User>().
+                HasMany(p => p.Gadgets).
+                WithOne(p => p.Users).
+                HasForeignKey(p => p.UserId);
+
+            // User - UserSecurityPayment (One-to-Many)
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.UserSecurityPayment)
+                .WithOne(usp => usp.Users)
+                .HasForeignKey(usp => usp.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Assuming cascading delete is desired
+            
+            //User Address
+            modelBuilder.Entity<User>()
+                .HasMany(a=>a.Address).
+                WithOne(a=>a.User)
+                .HasForeignKey(a=>a.UserId).OnDelete(DeleteBehavior.NoAction);
+
+
+            //----------------------------------------------------------DeliveryPerson-----------------------------------------------------------
 
             modelBuilder.Entity<DeliveryPerson>().
-                HasOne(p => p.DeliveryPersonOnline).
-                WithOne(p => p.DeliveryPerson);
+             HasOne(p => p.DeliveryPersonOnline).
+             WithOne(p => p.DeliveryPerson);
 
             modelBuilder.Entity<DeliveryPersonOnline>().
-                HasOne(p=>p.DeliveryPerson).
-                WithOne(p => p.DeliveryPersonOnline). 
-                HasForeignKey<DeliveryPersonOnline>(p => p.DeliveryPersonId);
-     
+                HasOne(p => p.DeliveryPerson).
+                WithOne(p => p.DeliveryPersonOnline).
+                HasForeignKey<DeliveryPersonOnline>(p => p.DeliveryPersonId).OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<User>().
-                HasMany(p=>p.Gadgets).
-                WithOne(p => p.Users).
-                HasForeignKey(p=>p.UserId);
 
-           
+            modelBuilder.Entity<Pickup>()
+               .HasOne(p => p.DeliveryPersons)
+               .WithMany(p => p.Pickups)
+               .HasForeignKey(p => p.DeliveryPersonId).OnDelete(DeleteBehavior.NoAction);
+
+
+            //----------------------------------------------------------Vendor-----------------------------------------------------------
+
+            modelBuilder.Entity<Vendor>()
+             .HasMany(e => e.Pickups)
+             .WithOne(e => e.Vendors)
+             .HasForeignKey(e => e.VendorId).OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Vendor>()
+                .HasMany(e => e.VendorCosts)
+                .WithOne(e => e.Vendors)
+                .HasForeignKey(e => e.VendorId).OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Vendor>()
+                .HasOne(e=>e.VendorAddress)
+                .WithOne(e=>e.Vendor)
+                .HasForeignKey<VendorAddress>(e=>e.VendorId);
+
+
+            //---------------------------------Gadget-------------------------------------------------------------
+
+            //------------------------------------------Pickup-------------------------------------
+
             modelBuilder.Entity<Pickup>().
                 HasOne(p=>p.Gadget).
                 WithOne(p=>p.Pickup).
-                HasForeignKey<Pickup>(p => p.GadgetId);   
+                HasForeignKey<Pickup>(p => p.GadgetId);
 
-            modelBuilder.Entity<Pickup>().
-                HasOne(p=>p.Status).
-                WithOne (p=>p.Pickup).
-                HasForeignKey<Status>(p => p.PickupId);
+
+            //-----------------------------------------status-----------------------------------------------------
+
+            modelBuilder.Entity<Status>().
+                HasOne(p => p.Pickup).
+                WithMany(p => p.Statuss).
+                HasForeignKey(p => p.PickupId).OnDelete(DeleteBehavior.NoAction);
 
            modelBuilder.Entity<Address>().
                 HasMany(p=>p.Gadgets).
                 WithOne(p=>p.Address).
-                HasForeignKey (p=>p.AddressId);
+                HasForeignKey (p=>p.AddressId).OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<UserSecurityPayment>().
                 Property(t=>t.SecurityAmount).
@@ -97,43 +164,31 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
                 Property(t=>t.price).
                 HasPrecision(18,2);
 
+            modelBuilder.Entity<VendorCost>().
+                Property(c=>c.ServiceCost).HasPrecision(18,2);
 
-            modelBuilder.Entity<User>().
-                HasMany(p=>p.UserSecurityPayment).
-                WithOne(u=>u.Users).
-                HasForeignKey(u=>u.UserId);
-
-            modelBuilder.Entity<UserSecurityPayment>().
-                HasMany(p => p.orderGadgets).
-                WithOne(p => p.UserPayment).
-                HasForeignKey(p => p.PaymentId);
-
-            modelBuilder.Entity<OrderGadget>().
-                HasOne(p=>p.Gadget).
-                WithOne(p=>p.OrderGadget).
-                HasForeignKey<Gadget>(p=>p.Id);
+            modelBuilder.Entity<VendorCost>().
+               Property(c => c.SaleCost).HasPrecision(18, 2);
 
 
+
+            // UserSecurityPayment - OrderGadget (One-to-One)
             modelBuilder.Entity<UserSecurityPayment>()
-                 .HasOne(usp => usp.Gadgets)
-                 .WithOne(g => g.UserSecurityPayment)
-                 .HasForeignKey<UserSecurityPayment>(usp => usp.TransactionId)
-                 .HasPrincipalKey<Gadget>(g => g.TransactionId);
+                .HasOne(usp => usp.orderGadgets)
+                .WithOne(og => og.UserPayment)
+                .HasForeignKey<OrderGadget>(og => og.PaymentId)
+                .OnDelete(DeleteBehavior.Restrict); // Restrict cascading delete to avoid the cycle
 
 
-            //modelBuilder.Entity<DeliveryPersonPayment>().
-            //    HasOne(p => p.Person).
-            //    WithOne(p => p.DeliveryPersonPayment);
-            //modelBuilder.Entity<Vendor>().
-            //    HasMany(p => p.VendorPayment).
-            //    WithOne(p => p.Vendor);
-            //modelBuilder.Entity<Vendor>().
-            //    HasMany(p=>p.VendorPayment).
-            //    WithOne(p=>p.Vendor);
+            // OrderGadget - Gadget (One-to-One)
+            modelBuilder.Entity<OrderGadget>()
+                .HasOne(og => og.Gadget)
+                .WithOne(o => o.OrderGadget)
+                .HasForeignKey<OrderGadget>(og => og.GadgetId)
+                .OnDelete(DeleteBehavior.Cascade); // Assuming cascading delete is desired
 
 
-
-
+            //
 
         }
     }

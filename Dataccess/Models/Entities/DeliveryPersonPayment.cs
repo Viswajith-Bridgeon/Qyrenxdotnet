@@ -12,7 +12,7 @@ namespace Qyrenx.Dataccess.Models.Entities
         public Guid DeliveryPersonId { get; set; }
         public bool SalaryStatus {  get; set; }
         public bool BonusStatus {  get; set; }
-        public virtual DeliveryPerson Person { get; set; }
+        //public virtual DeliveryPerson Person { get; set; }
 
     }
 }

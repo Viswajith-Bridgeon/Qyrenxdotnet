@@ -11,5 +11,6 @@
         public string Role { get; set; } = "User";
         public ICollection<Gadget> Gadgets { get; set; }
         public ICollection<UserSecurityPayment> UserSecurityPayment { get; set; }
+        public  ICollection<Address> Address { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Qyrenx.Dataccess.Models.Entities
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace Qyrenx.Dataccess.Models.Entities
 {
     public class Vendor: AuditableEntity
     {
@@ -13,11 +15,14 @@
 
         public string ShopeLicense { get; set; }
 
+        public DateTime OpeningTime { get; set; }
+        public DateTime ClosingTime { get; set; }
         public string HashPassword { get; set; }
         public bool IsBlock { get; set; } = false;
         public bool IsVerified { get; set; } = false;
         public string Role { get; set; } = "Vendor";
-        public virtual Pickup Pickups { get; set; }
-        public ICollection<VendorPayment> VendorPayment { get; set; }
+        public  ICollection<Pickup> Pickups { get; set; }
+        public ICollection<VendorCost> VendorCosts{ get; set; }
+        public virtual VendorAddress VendorAddress { get; set; }
     }
 }

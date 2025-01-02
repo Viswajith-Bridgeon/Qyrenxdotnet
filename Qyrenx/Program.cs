@@ -15,6 +15,8 @@ using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Business.Services.CategoryServices;
 using Qyrenx.CustomMidlleware;
 using Qyrenx.Business.Services.AddressServices;
+using Qyrenx.Business.Services.UserSecurityPay;
+using Qyrenx.Business.Services.GadgetServices;
 
 namespace Qyrenx
 {
@@ -36,7 +38,8 @@ namespace Qyrenx
             builder.Services.AddScoped<ICloudinaryService, CloudinaryServices>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IAddressServices, AddressServices>();
-
+            builder.Services.AddScoped<IUserSecurityPaymentService, UserSecurityPaymentService>();
+            builder.Services.AddScoped<IGadgetSerives, GadgetServices>();
 
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
