@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Qyrenx.Dataccess.Models.Entities
 {
-    public class VendorCategory
+    public class VendorCategory :AuditableEntity
     {
         public Guid Id { get; set; }    
         public Guid VendorId{ get; set; }

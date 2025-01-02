@@ -15,5 +15,7 @@ namespace Qyrenx.Business.Services.VendorServices
 		Task<bool> BlockVendor(Guid id);
 		Task<bool> UnblockVendor(Guid id);
 		Task<bool> VerificationVendor(Guid id);
+
+        Task<Guid> VendorAssign(Guid catid);
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,6 @@ namespace Qyrenx.Dataccess.Models.Entities
         public string PaymentString { get; set; }
         public string TransactionId { get; set; }
         public virtual User Users { get; set; }
-        public virtual Address Addresses { get; set; }
-        public virtual Gadget Gadgets { get; set; }
-        public ICollection <OrderGadget> orderGadgets{ get; set;}
+        public virtual OrderGadget orderGadgets{ get; set;}
     }
 }

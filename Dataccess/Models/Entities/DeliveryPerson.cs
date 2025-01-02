@@ -10,12 +10,12 @@
         public int Mobile { get; set; }
         public string HashPassword { get; set; }
         public string Role { get; set; } = "DeliveryPerson";
-        public bool IsActive { get; set; } = false;
         public bool IsBlock { get; set; } = false;
         public bool IsVerified { get; set; } = false;
         public ICollection<Pickup> Pickups { get; set; }
         public virtual DeliveryPersonOnline DeliveryPersonOnline { get; set; }
-        public virtual DeliveryPersonPayment DeliveryPersonPayment { get; set; }
+
+        //public virtual DeliveryPersonPayment DeliveryPersonPayment { get; set; }
 
     }
 }

@@ -12,8 +12,8 @@ using Qyrenx.Dataccess.ApplicationDbContext;
 namespace Qyrenx.Dataccess.Migrations
 {
     [DbContext(typeof(QyrenxContext))]
-    [Migration("20241229174331_Initial")]
-    partial class Initial
+    [Migration("20250102053403_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,7 +48,7 @@ namespace Qyrenx.Dataccess.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("PersonId")
@@ -92,7 +92,7 @@ namespace Qyrenx.Dataccess.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("LandMark")
@@ -100,6 +100,10 @@ namespace Qyrenx.Dataccess.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -124,6 +128,10 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<Guid>("CategoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("CategoryDescription")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
@@ -165,13 +173,10 @@ namespace Qyrenx.Dataccess.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<bool>("IsBlock")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsVerified")
@@ -249,7 +254,7 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<Guid>("DeliveryPersonId")
                         .HasColumnType("char(36)");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("SalaryStatus")
@@ -263,16 +268,16 @@ namespace Qyrenx.Dataccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeliveryPersonId")
-                        .IsUnique();
-
-                    b.ToTable("deliveryPersonPayments");
+                    b.ToTable("DeliveryPersonPayment");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Gadget", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AddressId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid>("CategoryId")
@@ -299,7 +304,7 @@ namespace Qyrenx.Dataccess.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("UpdatedBy")
@@ -313,11 +318,40 @@ namespace Qyrenx.Dataccess.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AddressId");
+
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Gadgets");
+                });
+
+            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.OrderGadget", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("GadgetId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<decimal>("price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GadgetId")
+                        .IsUnique();
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique();
+
+                    b.ToTable("OrderGadgets");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.PaymentToUser", b =>
@@ -335,7 +369,7 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<decimal>("Pay")
@@ -379,11 +413,8 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<Guid>("GadgetId")
                         .HasColumnType("char(36)");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<Guid>("StatusId")
-                        .HasColumnType("char(36)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("longtext");
@@ -401,8 +432,7 @@ namespace Qyrenx.Dataccess.Migrations
                     b.HasIndex("GadgetId")
                         .IsUnique();
 
-                    b.HasIndex("VendorId")
-                        .IsUnique();
+                    b.HasIndex("VendorId");
 
                     b.ToTable("Pickups");
                 });
@@ -422,7 +452,7 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("PickupId")
@@ -440,8 +470,7 @@ namespace Qyrenx.Dataccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PickupId")
-                        .IsUnique();
+                    b.HasIndex("PickupId");
 
                     b.ToTable("Status");
                 });
@@ -472,7 +501,7 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<bool>("IsBlock")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<int>("Mobile")
@@ -500,9 +529,9 @@ namespace Qyrenx.Dataccess.Migrations
                         new
                         {
                             Id = new Guid("a1f5d5da-e94d-44f1-a8c3-b60f42101a01"),
-                            CreatedOn = new DateTime(2024, 12, 29, 23, 13, 28, 284, DateTimeKind.Local).AddTicks(7452),
+                            CreatedOn = new DateTime(2025, 1, 2, 11, 4, 2, 560, DateTimeKind.Local).AddTicks(3966),
                             Email = "admin@gmail.com",
-                            HashPassword = "$2a$11$3V7wPzRE/BYpq0rj55tzIONecl0d09ICSl3auOjDP4/zhB32VzxsO",
+                            HashPassword = "$2a$11$q5wBlJLWVy6JVydzy4dCpuA6ga6vgxnZe7MA7di6q7UgseAjuWwnG",
                             IsBlock = false,
                             IsDelete = false,
                             Mobile = 1234567890,
@@ -511,7 +540,7 @@ namespace Qyrenx.Dataccess.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.UserPayment", b =>
+            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.UserSecurityPayment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -526,17 +555,20 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<decimal>("OriginalAmount")
-                        .HasColumnType("decimal(65,30)");
+                    b.Property<string>("PaymentString")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<decimal>("SecurityAmount")
-                        .HasColumnType("decimal(65,30)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("StatusId")
-                        .HasColumnType("char(36)");
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("longtext");
@@ -549,8 +581,6 @@ namespace Qyrenx.Dataccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StatusId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("UserPayment");
@@ -561,6 +591,9 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("ClosingTime")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
@@ -582,7 +615,7 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<bool>("IsBlock")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsVerified")
@@ -594,6 +627,9 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<DateTime>("OpeningTime")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -618,6 +654,61 @@ namespace Qyrenx.Dataccess.Migrations
                     b.ToTable("Vendors");
                 });
 
+            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.VendorAddress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("CreatedOn")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("House")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("LandMark")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("VendorId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorId")
+                        .IsUnique();
+
+                    b.ToTable("VendorAddresses");
+                });
+
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.VendorCategory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -626,6 +717,24 @@ namespace Qyrenx.Dataccess.Migrations
 
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("CreatedOn")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("VendorId")
                         .HasColumnType("char(36)");
@@ -645,9 +754,6 @@ namespace Qyrenx.Dataccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<decimal>("Cost")
-                        .HasColumnType("decimal(65,30)");
-
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
 
@@ -657,7 +763,10 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsServiceable")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("PickupId")
@@ -666,6 +775,14 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<string>("ProblemDescription")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<decimal?>("SaleCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ServiceCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("longtext");
@@ -676,11 +793,17 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<Guid>("VendorId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid>("VendorsCostId")
+                        .HasColumnType("char(36)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("PickupId");
+                    b.HasIndex("PickupId")
+                        .IsUnique();
 
                     b.HasIndex("VendorId");
+
+                    b.HasIndex("VendorsCostId");
 
                     b.ToTable("VendorCost");
                 });
@@ -700,14 +823,11 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<decimal>("Payment")
                         .HasColumnType("decimal(65,30)");
-
-                    b.Property<Guid>("PickId")
-                        .HasColumnType("char(36)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("longtext");
@@ -715,25 +835,25 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("VendorId")
+                    b.Property<Guid>("VendorCostId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("VendorId");
+                    b.HasIndex("VendorCostId");
 
                     b.ToTable("VendorPayment");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Address", b =>
                 {
-                    b.HasOne("Qyrenx.Dataccess.Models.Entities.User", "Users")
-                        .WithMany()
+                    b.HasOne("Qyrenx.Dataccess.Models.Entities.User", "User")
+                        .WithMany("Address")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Users");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.DeliveryPersonOnline", b =>
@@ -741,25 +861,20 @@ namespace Qyrenx.Dataccess.Migrations
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.DeliveryPerson", "DeliveryPerson")
                         .WithOne("DeliveryPersonOnline")
                         .HasForeignKey("Qyrenx.Dataccess.Models.Entities.DeliveryPersonOnline", "DeliveryPersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("DeliveryPerson");
                 });
 
-            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.DeliveryPersonPayment", b =>
-                {
-                    b.HasOne("Qyrenx.Dataccess.Models.Entities.DeliveryPerson", "Person")
-                        .WithOne("DeliveryPersonPayment")
-                        .HasForeignKey("Qyrenx.Dataccess.Models.Entities.DeliveryPersonPayment", "DeliveryPersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Gadget", b =>
                 {
+                    b.HasOne("Qyrenx.Dataccess.Models.Entities.Address", "Address")
+                        .WithMany("Gadgets")
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
@@ -772,9 +887,30 @@ namespace Qyrenx.Dataccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Address");
+
                     b.Navigation("Category");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.OrderGadget", b =>
+                {
+                    b.HasOne("Qyrenx.Dataccess.Models.Entities.Gadget", "Gadget")
+                        .WithOne("OrderGadget")
+                        .HasForeignKey("Qyrenx.Dataccess.Models.Entities.OrderGadget", "GadgetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Qyrenx.Dataccess.Models.Entities.UserSecurityPayment", "UserPayment")
+                        .WithOne("orderGadgets")
+                        .HasForeignKey("Qyrenx.Dataccess.Models.Entities.OrderGadget", "PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Gadget");
+
+                    b.Navigation("UserPayment");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Pickup", b =>
@@ -782,7 +918,7 @@ namespace Qyrenx.Dataccess.Migrations
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.DeliveryPerson", "DeliveryPersons")
                         .WithMany("Pickups")
                         .HasForeignKey("DeliveryPersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.Gadget", "Gadget")
@@ -792,9 +928,9 @@ namespace Qyrenx.Dataccess.Migrations
                         .IsRequired();
 
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.Vendor", "Vendors")
-                        .WithOne("Pickups")
-                        .HasForeignKey("Qyrenx.Dataccess.Models.Entities.Pickup", "VendorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("Pickups")
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("DeliveryPersons");
@@ -807,31 +943,34 @@ namespace Qyrenx.Dataccess.Migrations
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Status", b =>
                 {
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.Pickup", "Pickup")
-                        .WithOne("Status")
-                        .HasForeignKey("Qyrenx.Dataccess.Models.Entities.Status", "PickupId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("Statuss")
+                        .HasForeignKey("PickupId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Pickup");
                 });
 
-            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.UserPayment", b =>
+            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.UserSecurityPayment", b =>
                 {
-                    b.HasOne("Qyrenx.Dataccess.Models.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.User", "Users")
-                        .WithMany()
+                        .WithMany("UserSecurityPayment")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Status");
-
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.VendorAddress", b =>
+                {
+                    b.HasOne("Qyrenx.Dataccess.Models.Entities.Vendor", "Vendor")
+                        .WithOne("VendorAddress")
+                        .HasForeignKey("Qyrenx.Dataccess.Models.Entities.VendorAddress", "VendorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vendor");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.VendorCategory", b =>
@@ -856,31 +995,44 @@ namespace Qyrenx.Dataccess.Migrations
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.VendorCost", b =>
                 {
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.Pickup", "Pickups")
-                        .WithMany()
-                        .HasForeignKey("PickupId")
+                        .WithOne("VendorCost")
+                        .HasForeignKey("Qyrenx.Dataccess.Models.Entities.VendorCost", "PickupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Qyrenx.Dataccess.Models.Entities.Vendor", "Vendors")
-                        .WithMany()
+                        .WithMany("VendorCosts")
                         .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Qyrenx.Dataccess.Models.Entities.VendorCost", "VendorsCost")
+                        .WithMany()
+                        .HasForeignKey("VendorsCostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Pickups");
 
                     b.Navigation("Vendors");
+
+                    b.Navigation("VendorsCost");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.VendorPayment", b =>
                 {
-                    b.HasOne("Qyrenx.Dataccess.Models.Entities.Vendor", "Vendor")
-                        .WithMany("VendorPayment")
-                        .HasForeignKey("VendorId")
+                    b.HasOne("Qyrenx.Dataccess.Models.Entities.VendorCost", "VendorCost")
+                        .WithMany()
+                        .HasForeignKey("VendorCostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Vendor");
+                    b.Navigation("VendorCost");
+                });
+
+            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Address", b =>
+                {
+                    b.Navigation("Gadgets");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.DeliveryPerson", b =>
@@ -888,35 +1040,49 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Navigation("DeliveryPersonOnline")
                         .IsRequired();
 
-                    b.Navigation("DeliveryPersonPayment")
-                        .IsRequired();
-
                     b.Navigation("Pickups");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Gadget", b =>
                 {
+                    b.Navigation("OrderGadget")
+                        .IsRequired();
+
                     b.Navigation("Pickup")
                         .IsRequired();
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Pickup", b =>
                 {
-                    b.Navigation("Status")
+                    b.Navigation("Statuss");
+
+                    b.Navigation("VendorCost")
                         .IsRequired();
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.User", b =>
                 {
+                    b.Navigation("Address");
+
                     b.Navigation("Gadgets");
+
+                    b.Navigation("UserSecurityPayment");
+                });
+
+            modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.UserSecurityPayment", b =>
+                {
+                    b.Navigation("orderGadgets")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.Vendor", b =>
                 {
-                    b.Navigation("Pickups")
+                    b.Navigation("Pickups");
+
+                    b.Navigation("VendorAddress")
                         .IsRequired();
 
-                    b.Navigation("VendorPayment");
+                    b.Navigation("VendorCosts");
                 });
 #pragma warning restore 612, 618
         }

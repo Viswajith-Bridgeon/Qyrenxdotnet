@@ -211,5 +211,62 @@ namespace Qyrenx.Business.Services.VendorServices
 				throw new Exception("There was an ERORR in VERIFICATION");
 			}
 		}
-	}
+
+        public async Task<Guid> VendorAssign(Guid catid)
+        {
+            try
+            {
+                // Step 1: Get all vendor ids related to the given category
+                var vendorInCategory = await _context.VendorCategories
+                    .Where(c => c.CategoryId == catid)
+                    .Include(c => c.Vendor)
+                        .ThenInclude(v => v.Pickups)
+                            .ThenInclude(p => p.Statuss)
+                    .ToListAsync();
+
+                // Step 2: Get the vendor ids
+                var vendorIds = vendorInCategory.Select(vc => vc.Vendor.Id).ToList();
+
+                // Step 3: Get all pickups associated with the vendors in this category
+                var pickupsForVendors = await _context.Pickups
+                    .Where(p => vendorIds.Contains(p.VendorId))
+                    .Include(p => p.Statuss) // Include pickup statuses
+                    .ToListAsync();
+
+                // Step 4: Filter pickups that are 'Pending'
+                var pendingPickups = pickupsForVendors
+                    .Where(p => p.Statuss.Any(s => s.Statuss == "Pending"))
+                    .ToList();
+
+                // Step 5: Calculate completion rate for each vendor
+                var vendorCompletionRates = vendorIds.Select(vendorId =>
+                {
+                    var totalPickups = pickupsForVendors.Count(p => p.VendorId == vendorId);
+                    var completedPickups = pickupsForVendors.Count(p => p.VendorId == vendorId && p.Statuss.Any(s => s.Statuss == "Completed"));
+                    var completionRate = totalPickups == 0 ? 100 : (completedPickups / (double)totalPickups) * 100;
+
+                    return new
+                    {
+                        VendorId = vendorId,
+                        CompletionRate = completionRate,
+                        PendingWorks = pendingPickups.Count(p => p.VendorId == vendorId)
+                    };
+                }).ToList();
+
+                // Step 6: Sort vendors by completion rate
+                var sortedVendors = vendorCompletionRates
+                    .OrderByDescending(v => v.CompletionRate)
+                    .ToList();
+
+                // Step 7: Optionally, return the vendor ids based on completion rate and pending works
+                var vendorIdsSorted = sortedVendors.First();
+                return vendorIdsSorted.VendorId;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+    }
 }

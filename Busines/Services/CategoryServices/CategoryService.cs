@@ -25,20 +25,19 @@ namespace Qyrenx.Business.Services.CategoryServices
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<CategoryAddDto>> GetCategory()
+        public async Task<IEnumerable<Category>> GetCategory()
         {
             try
             {
                 var res = await _context.Categories.ToListAsync();  
-                var cat = _mapper.Map<IEnumerable<CategoryAddDto>>(res); 
-                return cat;
+                return res;
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.InnerException.Message);
             }
         }
-        public async Task<bool> AddCategory(string name,IFormFile image)
+        public async Task<bool> AddCategory(string name,string dis, IFormFile image)
         {
             try
             {
@@ -50,6 +49,7 @@ namespace Qyrenx.Business.Services.CategoryServices
                     {
                         CategoryName = name,
                         Image = img,
+                        CategoryDescription=dis,
                     };
                     var cat = _mapper.Map<Category>(category);
                     await _context.Categories.AddAsync(cat);

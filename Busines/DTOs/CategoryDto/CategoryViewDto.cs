@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace Qyrenx.Business.DTOs.CategoryDto
 {
-    public class CategoryAddDto
+    public class CategoryViewDto
     {
-        public string CategoryName { get; set; }
-        public string CategoryDescription { get; set; }
 
-        public string Image {  get; set; }
     }
 }

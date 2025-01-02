@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Qyrenx.Business.DTOs.CategoryDto;
 using Qyrenx.Business.Services.CategoryServices;
+using Qyrenx.Dataccess.Models.Entities;
 
 namespace Qyrenx.Controllers
 {
@@ -16,7 +17,7 @@ namespace Qyrenx.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<CategoryAddDto>> Get()
+        public async Task<ActionResult<Category>> Get()
         {
             try
             {
@@ -30,11 +31,11 @@ namespace Qyrenx.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult>AddCategory([FromForm]string name,IFormFile img)
+        public async Task<IActionResult>AddCategory([FromForm]string name,string dis,IFormFile img)
         {
             try
             {
-                var res = await _categoryService.AddCategory(name, img);
+                var res = await _categoryService.AddCategory(name,dis, img);
                 if (res)
                     return Ok("Category Added Successfully");
                 return BadRequest("Already Exist");

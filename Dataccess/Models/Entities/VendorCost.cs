@@ -12,9 +12,13 @@ namespace Qyrenx.Dataccess.Models.Entities
         public Guid PickupId { get; set; }
         public Guid VendorId { get; set; }
         public string ProblemDescription {  get; set; }
-        public decimal Cost {  get; set; }
+        public bool IsServiceable {  get; set; }=true;
+        public decimal ServiceCost {  get; set; }
+        public decimal? SaleCost { get; set; }
         public virtual Pickup Pickups { get; set; }
         public virtual Vendor Vendors { get; set; }
+        public virtual VendorCost VendorsCost { get; set; }
+
 
     }
 }
