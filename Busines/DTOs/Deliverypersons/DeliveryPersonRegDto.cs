@@ -19,7 +19,8 @@ namespace Qyrenx.Business.Models.DTOs.Deliverypersons
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")]
         public string Password { get; set; }
-        //[Required]
-        //public int Otp { get; set; }
+
+        [Required]
+        public string? Otp { get; set; }
     }
 }

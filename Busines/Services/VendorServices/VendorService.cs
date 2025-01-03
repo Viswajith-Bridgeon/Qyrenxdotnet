@@ -8,6 +8,7 @@ using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Dataccess.Models.Entities;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
 using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Business.DTOs.VendorDtos;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -224,6 +225,11 @@ namespace Qyrenx.Business.Services.VendorServices
                             .ThenInclude(p => p.Statuss)
                     .ToListAsync();
 
+                if (vendorInCategory == null || !vendorInCategory.Any())
+                {
+                    throw new Exception("No vendors found for the given category.");
+                }
+
                 // Step 2: Get the vendor ids
                 var vendorIds = vendorInCategory.Select(vc => vc.Vendor.Id).ToList();
 
@@ -256,17 +262,65 @@ namespace Qyrenx.Business.Services.VendorServices
                 // Step 6: Sort vendors by completion rate
                 var sortedVendors = vendorCompletionRates
                     .OrderByDescending(v => v.CompletionRate)
+                    .ThenBy(v => v.PendingWorks)
                     .ToList();
 
-                // Step 7: Optionally, return the vendor ids based on completion rate and pending works
-                var vendorIdsSorted = sortedVendors.First();
-                return vendorIdsSorted.VendorId;
+                // Step 7: Assign vendor if there's no pickup data
+                if (!sortedVendors.Any())
+                {
+                    // Return the first available vendor from the category
+                    return vendorInCategory.First().Vendor.Id;
+                }
+
+                // Step 8: Return the vendor id with the highest priority
+                var selectedVendor = sortedVendors.First();
+                return selectedVendor.VendorId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex); // Preserve stack trace for better debugging
+            }
+        }
+
+        public async Task<bool> CategoryAddvendor(Guid id, Guid catid)
+        {
+            try
+            {
+                var exist = await _context.Vendors.FirstOrDefaultAsync(v => v.Id == id);
+                if (exist == null)
+                {
+                    return false;
+                }
+
+                var catexist = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == catid);
+                if (catexist == null)
+                {
+                    return false;
+                }
+                var cat_in_vandorcat = await _context.VendorCategories.Include(r => r.Vendor).FirstOrDefaultAsync(v => v.VendorId == id && v.CategoryId == catid);
+                if (cat_in_vandorcat != null)
+                {
+                    return false;
+                }
+
+
+                var category = new VendorCategoryAddDto
+                {
+                    VendorId = id,
+                    CategoryId = catid
+                };
+                var cat = _mapper.Map<VendorCategory>(category);
+                _context.VendorCategories.Add(cat);
+                await _context.SaveChangesAsync();
+                return true;
+
 
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.InnerException.Message);
+                throw new Exception($"An error occurred while adding the category for the vendor: {ex.Message}", ex);
             }
         }
+
     }
 }
