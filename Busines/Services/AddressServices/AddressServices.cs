@@ -110,5 +110,22 @@ namespace Qyrenx.Business.Services.AddressServices
                 throw new Exception(ex.InnerException?.Message ?? ex.Message);
             }
         }
+
+        public async Task<AddressViewDto> GetAddrsssById(Guid Aid)
+        {
+            try
+            {
+                var addresss = await _mainDbContext.Address.FindAsync(Aid);
+                if(addresss==null)
+                {
+                    return new AddressViewDto();
+                }
+                return _mapper.Map<AddressViewDto>(addresss);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
     }
 }

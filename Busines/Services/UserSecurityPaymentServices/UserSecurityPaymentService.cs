@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Org.BouncyCastle.Crypto.Engines;
 using Qyrenx.Business.DTOs.UserSecurityPaymentDto;
+using Qyrenx.Business.Services.DeliveryServices;
 using Qyrenx.Business.Services.VendorServices;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
@@ -15,11 +16,13 @@ namespace Qyrenx.Business.Services.UserSecurityPay
         private readonly QyrenxContext _context; 
         private readonly IConfiguration _configuration;
         private readonly IVendorServices _vendorServices;
-        public UserSecurityPaymentService(QyrenxContext context,IConfiguration configuration, IVendorServices vendorServices)
+        private readonly IDeliveryService _deliveryService;
+        public UserSecurityPaymentService(QyrenxContext context,IConfiguration configuration, IVendorServices vendorServices,IDeliveryService delivery)
         {
             _configuration = configuration;
             _context = context;
             _vendorServices = vendorServices;
+            _deliveryService = delivery;
         }
 
         public async Task<string> RazorOrderCreate(long price)
@@ -72,98 +75,213 @@ namespace Qyrenx.Business.Services.UserSecurityPay
                 throw new Exception("Payment verification error"+ex.InnerException.Message);
             }
         }
+        //public async Task<bool> CreateOrder(Guid id, UserSecurityInputDto inputorderDto)
+        //{
+        //    if (id == Guid.Empty)
+        //    {
+        //        throw new Exception("User not found");
+        //    }
+
+        //    var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+        //    return await executionStrategy.ExecuteAsync(async () =>
+        //    {
+        //        // Start a transaction
+        //        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        //        try
+        //        {
+        //            // Check the number of gadgets for the user
+        //            var count = _context.Gadgets.Count(c => c.UserId == id);
+        //            Gadget gad;
+
+        //            // Fetch the gadget based on count
+        //            if (count <= 1)
+        //            {
+        //                gad = await _context.Gadgets.FirstOrDefaultAsync(c => c.UserId == id);
+        //            }
+        //            else
+        //            {
+        //                gad = await _context.Gadgets
+        //                    .Where(c => c.UserId == id)
+        //                    .OrderBy(c => c.CreatedOn)
+        //                    .LastOrDefaultAsync();
+        //            }
+
+        //            if (gad == null)
+        //            {
+        //                throw new Exception("User has no gadgets");
+        //            }
+
+        //            // Create a new order and payment record
+        //            var order = new UserSecurityPayment
+        //            {
+        //                UserId = id,
+        //                SecurityAmount = 500 * 1000,
+        //                PaymentString = inputorderDto.PaymentString,
+        //                TransactionId = inputorderDto.TransactionId,
+        //            };
+
+        //            await _context.UserPayment.AddAsync(order);
+        //            await _context.SaveChangesAsync();
+
+        //            // Retrieve the payment object to link with the gadget order
+        //            var payid = await _context.UserPayment.FirstOrDefaultAsync(c =>
+        //                c.TransactionId == inputorderDto.TransactionId &&
+        //                c.PaymentString == inputorderDto.PaymentString);
+
+        //            if (payid == null)
+        //            {
+        //                throw new Exception("Payment record not found");
+        //            }
+
+        //            var ordergad = new OrderGadget
+        //            {
+        //                GadgetId = gad.Id,
+        //                price = 500 * 1000,
+        //                PaymentId = payid.Id,
+        //            };
+
+        //            await _context.OrderGadgets.AddAsync(ordergad);
+        //            await _context.SaveChangesAsync();
+
+        //            var pick = new Pickup
+        //            {
+        //                GadgetId = ordergad.GadgetId,
+        //                VendorId = await _vendorServices.VendorAssign(gad.CategoryId),
+        //                DeliveryPersonId = await _deliveryService.GetNearestDeliveryPerson(gad.AddressId)
+        //            };
+
+        //            await _context.Pickups.AddAsync(pick);
+        //            await _context.SaveChangesAsync();
+
+        //            // Commit the transaction if all operations are successful
+        //            await transaction.CommitAsync();
+        //            return true;
+        //        }
+        //        catch(Exception ex)
+        //        {
+        //            // Rollback the transaction in case of an error
+        //            await transaction.RollbackAsync();
+        //            throw new Exception("Error creating Razorpay order" + ex.InnerException.Message);
+        //        }
+        //    });
+        //}
+
 
         public async Task<bool> CreateOrder(Guid id, UserSecurityInputDto inputorderDto)
         {
-            try
+            if (id == Guid.Empty)
             {
-                if (id == Guid.Empty)
-                {
-                    throw new Exception("User not found");
-                }
+                throw new Exception("User not found");
+            }
 
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
                 // Start a transaction
-                using (var transaction = await _context.Database.BeginTransactionAsync())
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
                 {
-                    try
+                    // Check the number of gadgets for the user
+                    var count = _context.Gadgets.Count(c => c.UserId == id);
+                    Gadget gad;
+
+                    // Fetch the gadget based on count
+                    if (count <= 1)
                     {
-                        // Check the number of gadgets for the user
-                        var count = await _context.Gadgets.CountAsync(c => c.UserId == id);
-                        Gadget gad;
-
-                        // Fetch the gadget based on count
-                        if (count <= 1)
-                        {
-                            gad = await _context.Gadgets.FirstOrDefaultAsync(c => c.UserId == id);
-                        }
-                        else
-                        {
-                            gad = await _context.Gadgets
-                                .Where(c => c.UserId == id)
-                                .OrderBy(c => c.CreatedOn)
-                                .LastOrDefaultAsync();
-                        }
-
-                        if (gad == null)
-                        {
-                            throw new Exception("User has no gadgets");
-                        }
-
-                        // Create a new order and payment record
-                        var order = new UserSecurityPayment
-                        {
-                            UserId = id,
-                            SecurityAmount = 500 * 1000,
-                            PaymentString = inputorderDto.PaymentString,
-                            TransactionId = inputorderDto.TransactionId,
-                        };
-
-                        await _context.UserPayment.AddAsync(order);
-                        await _context.SaveChangesAsync();
-
-                        // Retrieve the payment object to link with the gadget order
-                        var payid = await _context.UserPayment.FirstOrDefaultAsync(c => c.TransactionId == inputorderDto.TransactionId && c.PaymentString == inputorderDto.PaymentString);
-
-                        if (payid == null)
-                        {
-                            throw new Exception("Payment record not found");
-                        }
-
-                        var ordergad = new OrderGadget
-                        {
-                            GadgetId = gad.Id,
-                            price = 500 * 1000,
-                            PaymentId = payid.Id,
-                        };
-
-                        await _context.OrderGadgets.AddAsync(ordergad);
-                        await _context.SaveChangesAsync();
-
-                        var pick = new Pickup
-                        {
-                            GadgetId = ordergad.GadgetId,
-                            VendorId = await _vendorServices.VendorAssign(gad.CategoryId),
-                            DeliveryPersonId = 1234
-                        };
-                        // Commit the transaction if all operations are successful
-                        await transaction.CommitAsync();
-                        return true;
+                        gad = await _context.Gadgets.FirstOrDefaultAsync(c => c.UserId == id);
                     }
-                    catch (Exception)
+                    else
                     {
-                        // If an error occurs, rollback the transaction
-                        await transaction.RollbackAsync();
-                        throw;
+                        gad = await _context.Gadgets
+                            .Where(c => c.UserId == id)
+                            .OrderBy(c => c.CreatedOn)
+                            .LastOrDefaultAsync();
                     }
+
+                    if (gad == null)
+                    {
+                        throw new Exception("User has no gadgets");
+                    }
+
+                    // Create a new order and payment record
+                    var order = new UserSecurityPayment
+                    {
+                        UserId = id,
+                        SecurityAmount = 500 * 1000,
+                        PaymentString = inputorderDto.PaymentString,
+                        TransactionId = inputorderDto.TransactionId,
+                    };
+
+                    await _context.UserPayment.AddAsync(order);
+                    await _context.SaveChangesAsync();
+
+                    // Retrieve the payment object to link with the gadget order
+                    var payid = await _context.UserPayment.FirstOrDefaultAsync(c =>
+                        c.TransactionId == inputorderDto.TransactionId &&
+                        c.PaymentString == inputorderDto.PaymentString);
+
+                    if (payid == null)
+                    {
+                        throw new Exception("Payment record not found");
+                    }
+
+                    var ordergad = new OrderGadget
+                    {
+                        GadgetId = gad.Id,
+                        price = 500 * 1000,
+                        PaymentId = payid.Id,
+                    };
+
+                    await _context.OrderGadgets.AddAsync(ordergad);
+                    await _context.SaveChangesAsync();
+
+                    // Check if VendorId is valid
+                    var vendorId = await _vendorServices.VendorAssign(gad.CategoryId);
+                    if (vendorId == null)
+                    {
+                        throw new Exception("No valid vendor found for the given category");
+                    }
+
+                    // Check if DeliveryPersonId is valid
+                    var deliveryPersonId = await _deliveryService.GetNearestDeliveryPerson(gad.AddressId);
+                    if (deliveryPersonId == null)
+                    {
+                        throw new Exception("No valid delivery person found for the given address");
+                    }
+
+                    // Ensure DeliveryPersonId exists in the DeliveryPersons table
+                    var deliveryPersonExists = await _context.DeliveryPersonOnlines.FirstOrDefaultAsync(u => u.DeliveryPersonId == deliveryPersonId);
+                    if (deliveryPersonExists==null)
+                    {
+                        throw new Exception($"Delivery person with ID {deliveryPersonId} does not exist.");
+                    }
+
+                    var pick = new Pickup
+                    {
+                        GadgetId = ordergad.GadgetId,
+                        VendorId = vendorId,
+                        DeliveryPersonId = deliveryPersonId
+                    };
+
+                    await _context.Pickups.AddAsync(pick);
+                    await _context.SaveChangesAsync();
+
+                    // Commit the transaction if all operations are successful
+                    await transaction.CommitAsync();
+                    return true;
                 }
-            }
-            catch (Exception ex)
-            {
-                // Rethrow the exception to be handled by the calling code
-                throw new Exception("An error occurred while processing the order: " + ex.Message);
-            }
+                catch (Exception ex)
+                {
+                    // Rollback the transaction in case of an error
+                    await transaction.RollbackAsync();
+                    throw new Exception("Error creating Razorpay order: " + ex.Message);
+                }
+            });
         }
-
 
 
 

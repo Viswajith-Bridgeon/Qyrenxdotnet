@@ -1,11 +1,13 @@
 ﻿
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Business.Services.VendorServices;
 using Qyrenx.Dataccess.ApiResponses;
+using System.Security.Claims;
 
 namespace Qyrenx.present.Controllers
 {
@@ -172,5 +174,39 @@ namespace Qyrenx.present.Controllers
 			return NoContent();
 		}
 
-	}
+        [Authorize(Roles = "Vendor")]
+        [HttpPost("addcategory")]
+        public async Task<IActionResult> AddCategory_Vendor(Guid catid)
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromClaims();
+                var userId = userIdResult.Value;
+                var res = await _vendorServices.CategoryAddvendor(userId, catid);
+                if (res)
+                {
+                    return Ok("Category Added Successfully");
+                }
+                return BadRequest("Error");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+        private ActionResult<Guid> GetUserIdFromClaims()
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (Guid.TryParse(userIdString, out Guid userId))
+            {
+                return userId;
+            }
+
+            return Unauthorized();
+        }
+
+    }
 }

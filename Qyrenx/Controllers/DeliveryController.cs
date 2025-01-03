@@ -88,26 +88,7 @@ namespace Qyrenx.present.Controllers
             }
             return Ok(new ApiResponse<string>(200,"success!"));
         }
-        [HttpPost("send otp")]
-        public async Task<IActionResult> SendOtp(string mail)
-        {
-            var otp = _emailServices.sendOtp(mail);
-            if (otp == null)
-            {
-                return BadRequest(new ApiResponse<string>(404, "success!"));
-            }
-            return Ok(new ApiResponse<string>(200, "success!"));
-        }
-        [HttpPost("verify otp")]
-        public async Task<IActionResult> Verify(string mail, string otp)
-        {
-            var verification =  _emailServices.verifyOtp(mail, otp);
-            if (verification)
-            {
-                return Ok(new ApiResponse<string>(200, "success"));
-            }
-            return BadRequest(new ApiResponse<string>(404,"error in verification"));
-        }
+        
 
 
         [HttpGet("getalldeliverypersononline")]
@@ -122,9 +103,11 @@ namespace Qyrenx.present.Controllers
         }
 
         [HttpGet("getDeliverpersonActivity")]
-        public async Task<ActionResult<DeliveryPersonOnline>>GetDeliveryPersonActivity(Guid id,decimal lat,decimal lon)
+        public async Task<ActionResult<DeliveryPersonOnline>>GetDeliveryPersonActivity(decimal lat,decimal lon)
         {
-            var data=await _deliveryService.DeliveryPersonActivity(id,lat,lon); 
+            var id = Guid.Parse(HttpContext.Items["Id"].ToString());
+
+            var data =await _deliveryService.DeliveryPersonActivity(id,lat,lon); 
             if(data == null)
             {
                 return BadRequest(new ApiResponse<string>(404, "failed!"));

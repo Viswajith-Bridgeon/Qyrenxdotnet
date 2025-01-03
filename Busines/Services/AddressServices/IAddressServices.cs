@@ -18,5 +18,6 @@ namespace Qyrenx.Business.Services.AddressServices
         Task<bool> UpdateAddrsss(Guid Id,AddressAddDto dto);
 
         Task<bool> DeleteAddrsss(Guid id);
+        Task<AddressViewDto> GetAddrsssById(Guid Aid);
     }
 }

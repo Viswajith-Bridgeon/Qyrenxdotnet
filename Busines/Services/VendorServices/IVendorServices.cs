@@ -17,5 +17,6 @@ namespace Qyrenx.Business.Services.VendorServices
 		Task<bool> VerificationVendor(Guid id);
 
         Task<Guid> VendorAssign(Guid catid);
-	}
+        Task<bool> CategoryAddvendor(Guid id, Guid catid);
+    }
 }
