@@ -21,7 +21,7 @@ namespace Qyrenx.Controllers
 
         [Authorize(Roles = "User")]
         [HttpPost("AddAddress")]
-        public async Task<IActionResult> AddAddress([FromForm] AddressAddDto dto)
+        public async Task<IActionResult> AddAddress( AddressAddDto dto)
         {
             try
             {

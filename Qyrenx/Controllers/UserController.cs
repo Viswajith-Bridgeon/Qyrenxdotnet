@@ -56,7 +56,7 @@ namespace Qyrenx.present.Controllers
 
 
         [HttpPost("signup")]
-        public async Task<IActionResult> signup([FromForm] UserDto user)
+        public async Task<IActionResult> signup( UserDto user)
         {
             try
             {
@@ -277,6 +277,30 @@ namespace Qyrenx.present.Controllers
                 }
 
                 var res = new ApiResponse<bool>(200, "successfully reseted password", isPasswordset);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
+        [Authorize(Roles ="User")]
+        [HttpPatch("deleteUser")]
+        public async Task<IActionResult> DeleteUser()
+        {
+            try
+            {
+                var usedId = Guid.Parse(HttpContext.Items["Id"].ToString());
+                bool user =await _userServices.DeleteUser(usedId);
+                if (!user)
+                {
+                    var r = new ApiResponse<bool>(404, "error occured", user);
+                    return NotFound(r);
+                }
+
+                var res = new ApiResponse<bool>(200, "succesfully deleted",user);
                 return Ok(res);
             }
             catch (Exception ex)

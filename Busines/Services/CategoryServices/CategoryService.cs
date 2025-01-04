@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Qyrenx.Dataccess.DbAccess;
 
 namespace Qyrenx.Business.Services.CategoryServices
 {
@@ -18,18 +19,20 @@ namespace Qyrenx.Business.Services.CategoryServices
         private readonly QyrenxContext _context;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
-        public CategoryService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper)
+        private readonly IDbAccess _dbAccess;
+        public CategoryService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper, IDbAccess dbAccess)
         {
             _context = context;
             _cloudinaryService = cloudinaryService;
             _mapper = mapper;
+            _dbAccess = dbAccess;
         }
 
         public async Task<IEnumerable<Category>> GetCategory()
         {
             try
             {
-                var res = await _context.Categories.ToListAsync();  
+                var res =await _dbAccess.GetAllCategories();  
                 return res;
             }
             catch (Exception ex)
@@ -41,7 +44,8 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var exist=_context.Categories.Where(c=>c.CategoryName.ToLower()==name.ToLower());
+                var data= await _dbAccess.GetAllCategories();
+                var exist=data.Where(c=>c.CategoryName.ToLower()==name.ToLower());
                 if (!exist.Any())
                 {
                     var img = await _cloudinaryService.UploadDocumentAsync(image);
@@ -69,7 +73,8 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var exist=  await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
+                var data = await _dbAccess.GetAllCategories();
+                var exist=  data.FirstOrDefault(c => c.CategoryId == id);
                 if(exist!=null)
                 {
                     _context.Categories.Remove(exist);
@@ -90,7 +95,8 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var exist = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
+                var data = await _dbAccess.GetAllCategories();
+                var exist = data.FirstOrDefault(c => c.CategoryId == id);
                 if (exist != null)
                 {
                     if (image != null && name != null)

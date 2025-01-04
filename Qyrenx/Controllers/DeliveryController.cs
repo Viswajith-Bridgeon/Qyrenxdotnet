@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.Models.DTOs.Deliverypersons;
 using Qyrenx.Business.Services.DeliveryServices;
@@ -19,7 +20,7 @@ namespace Qyrenx.present.Controllers
             _emailServices = emailServices;
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromForm]DeliveryPersonRegDto regDto,IFormFile licence)
         {
             var res = await _deliveryService.Register(regDto,licence);
@@ -44,6 +45,7 @@ namespace Qyrenx.present.Controllers
             return NoContent();
         }
         [HttpPatch("verify")]
+        [Authorize(Roles="Admin")]
         public async Task<IActionResult> Verify(string mail)
         {
             if (!string.IsNullOrEmpty(mail))

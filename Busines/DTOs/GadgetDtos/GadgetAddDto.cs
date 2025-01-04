@@ -10,7 +10,6 @@ namespace Qyrenx.Business.DTOs.GadgetDtos
     {
         public Guid CategoryId { get; set; }
         public string GadgetName { get; set; }
-        public string Image { get; set; }
         public Guid AddressId { get; set; }
         public string Description { get; set; }
     }

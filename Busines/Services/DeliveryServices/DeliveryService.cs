@@ -15,6 +15,7 @@ using Qyrenx.Business.DTOs.AddressDtos;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Dataccess.DbAccess;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {
@@ -27,9 +28,10 @@ namespace Qyrenx.Business.Services.DeliveryServices
         private readonly ILogger<DeliveryService> _logger;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IEmailServices _emailServices;
+        private readonly IDbAccess _dbAccess;
         private object format;
 
-        public DeliveryService(QyrenxContext context, IConfiguration configuration, IMapper autoMapping,IJwtService jwtService,ILogger<DeliveryService> logger,ICloudinaryService cloudinaryService,IEmailServices emailServices)
+        public DeliveryService(QyrenxContext context, IConfiguration configuration, IMapper autoMapping,IJwtService jwtService,ILogger<DeliveryService> logger,ICloudinaryService cloudinaryService,IEmailServices emailServices,IDbAccess dbAccess)    
         {
             _autoMapping = autoMapping;
             _context = context; 
@@ -38,13 +40,14 @@ namespace Qyrenx.Business.Services.DeliveryServices
             _logger = logger;
             _cloudinaryService = cloudinaryService; 
             _emailServices = emailServices;
-            
+            _dbAccess = dbAccess;
         }
         public async Task <bool> Register(DeliveryPersonRegDto dto,IFormFile license)
         {
             try
             {
-                var exist =  await _context.DeliveryPersons.FirstOrDefaultAsync(p => p.Email == dto.Email);
+                var data = await _dbAccess.GetAllDeliveryPerson();
+                var exist =  data.FirstOrDefault(p => p.Email == dto.Email);
                 if (exist != null)
                 {
                     return false;
@@ -81,7 +84,8 @@ namespace Qyrenx.Business.Services.DeliveryServices
                 
                 _logger.LogInformation($"Searching for delivery person with email: {dto.Email}");
 
-                var exist = await _context.DeliveryPersons.SingleOrDefaultAsync(p => p.Email == dto.Email );
+                var data= await _dbAccess.GetAllDeliveryPerson();
+                var exist = data.SingleOrDefault(p => p.Email == dto.Email );
                 if (exist != null)
                 {
                     if (BCrypt.Net.BCrypt.Verify(dto.Password, exist.HashPassword))
@@ -114,7 +118,8 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var verification=await _context.DeliveryPersons.FirstOrDefaultAsync(p=>p.Email.Equals(mail));
+                var data=await _dbAccess.GetAllDeliveryPerson();   
+                var verification=data.FirstOrDefault(p=>p.Email.Equals(mail));
                 if(verification != null)
                 {
                     verification.IsVerified = true;
@@ -134,7 +139,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var deliverypersons =  _context.DeliveryPersons;
+                var deliverypersons =  await _dbAccess.GetAllDeliveryPerson();
                 if(deliverypersons != null)
                 {
                     return deliverypersons.Select(p => new DeliveryPersonDto
@@ -161,7 +166,8 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var deliveryperson= _context.DeliveryPersons.FirstOrDefault(p=>p.Id==id);
+                var data = await _dbAccess.GetAllDeliveryPerson();
+                var deliveryperson= data.FirstOrDefault(p=>p.Id==id);
                 if(deliveryperson != null)
                 {
                     return new DeliveryPersonDto
@@ -189,7 +195,8 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var exist =  _context.DeliveryPersons.FirstOrDefault(p=>p.Id==id);
+                var data = await _dbAccess.GetAllDeliveryPerson();
+                var exist =  data.FirstOrDefault(p=>p.Id==id);
                 if (exist != null)
                 {
                     exist.IsBlock = !exist.IsBlock;
@@ -208,8 +215,10 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var user = await _context.DeliveryPersons.FirstOrDefaultAsync(p => p.Id == id);
-                var useronline = await _context.DeliveryPersonOnlines.FirstOrDefaultAsync(p => p.DeliveryPersonId == user.Id);
+                var data=await _dbAccess.GetAllDeliveryPerson();
+                var user = data.FirstOrDefault(p => p.Id == id);
+                var data1=await _dbAccess.GetAllDeliveryPersonOnline();
+                var useronline = data1.FirstOrDefault(p => p.DeliveryPersonId == user.Id);
                 if (useronline != null)
                 {
                     useronline.IsActive = !useronline.IsActive;
@@ -243,8 +252,8 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var user = _context.DeliveryPersonOnlines;
-                if(user != null)
+                var user = await _dbAccess.GetAllDeliveryPersonOnline();
+                if (user != null)
                 {
                     return user.Select(p => new DeliveryPersonOnlineDto
                     {
@@ -263,7 +272,8 @@ namespace Qyrenx.Business.Services.DeliveryServices
         }
         public async Task<List<DeliveryPersonOnlineDto>> GetActiveDeliveryPersons()
         {
-            var user = await _context.DeliveryPersonOnlines.Where(p=>p.IsActive==true).ToListAsync();
+            var data = await _dbAccess.GetAllDeliveryPersonOnline();
+            var user = data.Where(p=>p.IsActive==true).ToList();
             if(user != null)
             {
                 return user.Select(p=>new DeliveryPersonOnlineDto
@@ -282,7 +292,8 @@ namespace Qyrenx.Business.Services.DeliveryServices
 
         public async Task<Guid> GetNearestDeliveryPerson(Guid id)
         {
-            var userAddress = await _context.Address.FindAsync(id);
+            var user=await _dbAccess.GetAllAddressAddresses();
+            var userAddress = user.FirstOrDefault(p=>p.Id==id);
             var (UserLat,UserLon)=await GetCoordinatesFromAddress(userAddress);
             var ActivepPersons = await GetActiveDeliveryPersons();
             if (ActivepPersons == null)
@@ -361,10 +372,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
             public string Lon { get; set; }
         }
 
-        //private string GetFullAddress(Address address)
-        //    {
-        //        return $"{address.House}, {address.LandMark}, {address.City}, {address.PostalCode}";
-        //    }
+      
 
       
 
