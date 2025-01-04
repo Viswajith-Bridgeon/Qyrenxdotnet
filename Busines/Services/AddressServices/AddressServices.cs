@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.DTOs.AddressDtos;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Dataccess.DbAccess;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -16,10 +17,12 @@ namespace Qyrenx.Business.Services.AddressServices
     {
         private readonly QyrenxContext _mainDbContext;
         private readonly IMapper _mapper;
-        public AddressServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices)
+        private readonly IDbAccess _dbAccess;
+        public AddressServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailService, IDbAccess dbAccess)    
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
+            _dbAccess = dbAccess;
         }
 
 
@@ -52,7 +55,8 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var address=await _mainDbContext.Address.Where(x => x.UserId == Id).ToListAsync();
+                var data = await _dbAccess.GetAllAddressAddresses();
+                var address=data.Where(x => x.UserId == Id).ToList();
                 return _mapper.Map<List<AddressViewDto>>(address);
             }
             catch (Exception ex)
@@ -66,7 +70,8 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var address =await _mainDbContext.Address.FirstOrDefaultAsync(x => x.Id == AddressId);
+                var data = await _dbAccess.GetAllAddressAddresses();
+                var address =data.FirstOrDefault(x => x.Id == AddressId);
                 if(address == null)
                 {
                     return false;
@@ -92,7 +97,8 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var address = await _mainDbContext.Address.FirstOrDefaultAsync(x => x.Id == AddressId);
+                var data = await _dbAccess.GetAllAddressAddresses();
+                var address = data.FirstOrDefault(x => x.Id == AddressId);
                 if (address == null)
                 {
                     return false;
@@ -115,7 +121,8 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var addresss = await _mainDbContext.Address.FindAsync(Aid);
+                var data = await _dbAccess.GetAllAddressAddresses();
+                var addresss = data.FirstOrDefault(p=>p.Id==Aid);
                 if(addresss==null)
                 {
                     return new AddressViewDto();

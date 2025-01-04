@@ -1,4 +1,5 @@
-﻿using Qyrenx.Business.DTOs.GadgetDtos;
+﻿using Microsoft.AspNetCore.Http;
+using Qyrenx.Business.DTOs.GadgetDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,6 @@ namespace Qyrenx.Business.Services.GadgetServices
     public interface IGadgetSerives
     {
 
-        Task<bool> Addgadget(Guid id,GadgetAddDto dto);
+        Task<bool> Addgadget(Guid id,GadgetAddDto dto,IFormFile img);
     }
 }

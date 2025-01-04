@@ -2,16 +2,18 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.Dataccess.ApplicationDbContext;
+using Microsoft.Extensions.Configuration;
 
 namespace Qyrenx.Business.Services.EmailServices
 {
     public class EmailServices : IEmailServices
     {
         private readonly QyrenxContext _context;
-
-        public EmailServices(QyrenxContext context)
+        private readonly IConfiguration _configuration;
+        public EmailServices(QyrenxContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
 
@@ -61,14 +63,17 @@ namespace Qyrenx.Business.Services.EmailServices
         {
             try
             {
-                SmtpClient smtpClient = new SmtpClient("smtp.gmail.com");
-                smtpClient.Port = 587;
-                smtpClient.Credentials = new NetworkCredential("qyrenxq@gmail.com", "zrdf tdrq wgxc ummo");
-                smtpClient.EnableSsl = true;
+                var emailSettings = _configuration.GetSection("EmailSettings");
 
+
+                SmtpClient smtpClient = new SmtpClient(emailSettings["Host"]);
+                smtpClient.Port = int.Parse(emailSettings["Port"]);
+                smtpClient.Credentials = new NetworkCredential(emailSettings["Email"], emailSettings["Password"]);
+                smtpClient.EnableSsl = true;
+                var n = _configuration["EmailSettings:host"];
 
                 MailMessage mailMessage = new MailMessage();
-                mailMessage.From = new MailAddress("qyrenxq@gmail.com");
+                mailMessage.From = new MailAddress(emailSettings["Email"]);
                 mailMessage.To.Add(toAddress);
                 mailMessage.Subject = "OTP Verification";
                 //mailMessage.Body = "Your OTP for email verification is: " + otp;
@@ -126,12 +131,17 @@ namespace Qyrenx.Business.Services.EmailServices
         {
             try
             {
-                SmtpClient smtpClient = new SmtpClient("smtp.gmail.com");
-                smtpClient.Port = 587;
-                smtpClient.Credentials = new NetworkCredential("qyrenxq@gmail.com", "zrdf tdrq wgxc ummo");
+                var emailSettings = _configuration.GetSection("EmailSettings");
+
+
+                SmtpClient smtpClient = new SmtpClient(emailSettings["Host"]);
+                smtpClient.Port = int.Parse(emailSettings["Port"]);
+                smtpClient.Credentials = new NetworkCredential(emailSettings["Email"], emailSettings["Password"]);
                 smtpClient.EnableSsl = true;
+                var n = _configuration["EmailSettings:host"];
+
                 MailMessage mailMessage = new MailMessage();
-                mailMessage.From = new MailAddress("qyrenxq@gmail.com");
+                mailMessage.From = new MailAddress(emailSettings["Email"]);
                 mailMessage.To.Add(toAddress);
                 mailMessage.Subject = "Vendor verification";
 
@@ -214,15 +224,17 @@ namespace Qyrenx.Business.Services.EmailServices
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == toAddress);
 
 
+                var emailSettings = _configuration.GetSection("EmailSettings");
 
-                SmtpClient smtpClient = new SmtpClient("smtp.gmail.com");
-                smtpClient.Port = 587;
-                smtpClient.Credentials = new NetworkCredential("qyrenxq@gmail.com", "zrdf tdrq wgxc ummo");
+
+                SmtpClient smtpClient = new SmtpClient(emailSettings["Host"]);
+                smtpClient.Port = int.Parse(emailSettings["Port"]);
+                smtpClient.Credentials = new NetworkCredential(emailSettings["Email"], emailSettings["Password"]);
                 smtpClient.EnableSsl = true;
-
+                var n = _configuration["EmailSettings:host"];
 
                 MailMessage mailMessage = new MailMessage();
-                mailMessage.From = new MailAddress("qyrenxq@gmail.com");
+                mailMessage.From = new MailAddress(emailSettings["Email"]);
                 mailMessage.To.Add(toAddress);
                 mailMessage.Subject = "Reset Password Verification";
                 mailMessage.Body = GenerateEmailBodyforResetPassword(user.Role, otp);
