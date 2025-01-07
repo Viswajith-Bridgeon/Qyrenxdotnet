@@ -3,10 +3,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
 using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Business.Services.VendorServices;
 using Qyrenx.Dataccess.ApiResponses;
+using Qyrenx.Dataccess.ApplicationDbContext;
 using System.Security.Claims;
 
 namespace Qyrenx.present.Controllers
@@ -17,10 +20,14 @@ namespace Qyrenx.present.Controllers
     {
         private readonly IVendorServices _vendorServices;
 		private readonly IEmailServices _emailServices;
+        private readonly QyrenxContext _context;
+        private readonly IJwtService _jwtService;
 
-        public VendorController(IVendorServices vendorServices,IEmailServices emailServices)
+        public VendorController(IVendorServices vendorServices,IEmailServices emailServices,QyrenxContext context,IJwtService jwtService)
         {
             _vendorServices = vendorServices;
+            _emailServices = emailServices;
+            _context = context;
         }
 
 		[HttpPut("block/{id}")]
@@ -206,6 +213,30 @@ namespace Qyrenx.present.Controllers
             }
 
             return Unauthorized();
+        }
+
+
+        [HttpPost("refreshOfVendor")]
+        public async Task<IActionResult> AccessTokenRefresh(string Refresh)
+        {
+            try
+            {
+                var user = await _context.Vendors.FirstOrDefaultAsync(e => e.RefreshToken == Refresh);
+                if (user == null || user.TokenExpiryTime <= DateTime.UtcNow)
+                {
+                    return Unauthorized("Invalid or expired refresh token.");
+                }
+
+
+                var token = _jwtService.GenerateJwt(user.Id, user.Email, user.Role);
+
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+
+            }
         }
 
     }

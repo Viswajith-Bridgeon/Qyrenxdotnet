@@ -28,6 +28,7 @@ namespace Qyrenx.Business.Mapper
             CreateMap<DeliveryPersonOnlineDto, DeliveryPersonOnline>().ReverseMap();
             CreateMap<GadgetAddDto, Gadget>().ReverseMap();   
             CreateMap<VendorActiveDto,VendorOnline>().ReverseMap();
+            CreateMap<VendorRegisterDto,VendorAddress>().ReverseMap();
         }
     }
 }

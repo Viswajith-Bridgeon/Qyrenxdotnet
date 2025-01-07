@@ -14,6 +14,8 @@ using Qyrenx.Business.Services.DeliveryServices;
 using System.Text.Json;
 using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.DTOs.VendorActiveDto;
+using CloudinaryDotNet.Actions;
+using Qyrenx.Business.DTOs;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -41,17 +43,21 @@ namespace Qyrenx.Business.Services.VendorServices
 
 		public async Task<IEnumerable<VendorAdminViewDto>> GetVendor()
 		{
-			var vendors = _context.Vendors;
-			var vendor = vendors.Select(v => new VendorAdminViewDto
-			{
-				Id = v.Id,
-				Name = v.Name,
-				ShopeName = v.ShopeName,
-				ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
-				Mobile = v.Mobile,
-				Email = v.Email,
-                IsBlock=v.IsBlock,
-			});
+			var vendors = _context.Vendors.Include(v=>v.VendorAddress);
+            var vendor = vendors.Select(v => new VendorAdminViewDto
+            {
+                Id = v.Id,
+                Name = v.Name,
+                ShopeName = v.ShopeName,
+                ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
+                Mobile = v.Mobile,
+                Email = v.Email,
+                IsBlock = v.IsBlock,
+                City = v.VendorAddress.City,
+                House = v.VendorAddress.House,
+                LandMark = v.VendorAddress.LandMark,
+                PostalCode = v.VendorAddress.PostalCode,
+            });
 			return vendor.ToList();
 		}
 
@@ -107,7 +113,7 @@ namespace Qyrenx.Business.Services.VendorServices
 			return vendor.ToList();
 		}
 
-		public async Task<VendorLoginView> LoginVendor(VendorLogin loginDto)
+		public async Task<AllLoginresponses> LoginVendor(VendorLogin loginDto)
 		{
 			try
 			{
@@ -121,15 +127,19 @@ namespace Qyrenx.Business.Services.VendorServices
 							if (exist.IsBlock == false)
 							{
 								var token = _jwtService.GenerateJwt(exist.Id, exist.Email, exist.Role);
-								return new VendorLoginView { Name = exist.Name, Id = exist.Id, Token = token };
+                                var refreshtoken=await _jwtService.CreaterefreshToken(exist.Id, exist.Email, exist.Role);
+                                exist.RefreshToken = refreshtoken;
+                                exist.TokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                                await _context.SaveChangesAsync();
+                                return new AllLoginresponses{ Name = exist.Name, Id = exist.Id,Email=exist.Email,Role=exist.Role, Token = token ,refreshToken=refreshtoken};
 							}
-							return new VendorLoginView { Error = "person is blocked " };
+							return new AllLoginresponses { Error = "person is blocked " };
 						}
-						return new VendorLoginView { Error = "persons verification is pending!" };
+						return new AllLoginresponses { Error = "persons verification is pending!" };
 					}
-					return new VendorLoginView { Error = "enter valid credentials" };
+					return new AllLoginresponses { Error = "enter valid credentials" };
 				}
-				return new VendorLoginView { Error = "no such vendor person is registered" };
+				return new AllLoginresponses { Error = "no such vendor person is registered" };
 			}
 			catch (Exception ex)
 			{
@@ -155,6 +165,12 @@ namespace Qyrenx.Business.Services.VendorServices
 					vendor.HashPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
 					vendor.ShopeLicense = license;
 					_context.Vendors.Add(vendor);
+                    await _context.SaveChangesAsync();
+                    var vendoraddress=_mapper.Map<VendorAddress>(registerDto);
+                    vendoraddress.Role = "Vendor";
+                    var ven_id = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == registerDto.Email);
+                    vendoraddress.VendorId = ven_id.Id;
+                    _context.VendorAddresses.Add(vendoraddress);
 					await _context.SaveChangesAsync();
                     var data =await _dbAccess.GetAllVendor();
                     var data1=data.FirstOrDefault(p=>p.Email == registerDto.Email);
@@ -347,17 +363,20 @@ namespace Qyrenx.Business.Services.VendorServices
 
                 if (vendor == null)
                 {
-                    return new VendorOnline
+                    var vonline= new VendorOnline
                     {
                         IsActive=true,
                         VendorId=id,
                         Lat=GetCoordinatesFromAddress(adrs).Result.lat, 
                         Long=GetCoordinatesFromAddress(adrs).Result.lon
                     };
+                    await _context.VendorOnline.AddAsync(vonline);
+                    await _context.SaveChangesAsync();
+                    return vonline;
                 }
 
-
                 return new VendorOnline();
+
             }
             catch (Exception ex)
             {

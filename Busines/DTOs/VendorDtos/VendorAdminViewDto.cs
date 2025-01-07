@@ -12,9 +12,12 @@
 		public string ShopeName { get; set; }
 
 		public string ShopeLicense { get; set; }
-
         public bool IsBlock { get; set; }
-		public DateTime Date { get; set; }
+        public string House { get; set; }
+        public string City { get; set; }
+        public string LandMark { get; set; }
+        public string PostalCode { get; set; }
+        public DateTime Date { get; set; }
 
 
 	}
