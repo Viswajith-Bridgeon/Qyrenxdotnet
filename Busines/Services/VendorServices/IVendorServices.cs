@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Http;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
+using Qyrenx.Dataccess.Models.Entities;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -18,5 +19,7 @@ namespace Qyrenx.Business.Services.VendorServices
 
         Task<Guid> VendorAssign(Guid catid);
         Task<bool> CategoryAddvendor(Guid id, Guid catid);
+        Task <VendorOnline> VendorActivity(Guid id);
+        Task<Guid> GetNearestVendorPerson(Guid id);
     }
 }

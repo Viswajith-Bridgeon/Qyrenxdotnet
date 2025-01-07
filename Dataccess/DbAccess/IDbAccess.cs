@@ -23,5 +23,6 @@ namespace Qyrenx.Dataccess.DbAccess
         Task<List<UserSecurityPayment>> GetAllUserSecurityPayment();
         Task<List<Category>> GetAllCategories();
         Task<List<VendorCategory>> GetAllVendorCategories();
+        Task<List<VendorOnline>> GetAllVendorOnline();
     }
 }
