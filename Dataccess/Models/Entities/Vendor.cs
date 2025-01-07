@@ -24,5 +24,6 @@ namespace Qyrenx.Dataccess.Models.Entities
         public  ICollection<Pickup> Pickups { get; set; }
         public ICollection<VendorCost> VendorCosts{ get; set; }
         public virtual VendorAddress VendorAddress { get; set; }
+        public virtual VendorOnline VendorOnline { get; set; }
     }
 }

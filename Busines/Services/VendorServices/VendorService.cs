@@ -9,6 +9,11 @@ using Qyrenx.Dataccess.Models.Entities;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Business.DTOs.VendorDtos;
+using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Business.Services.DeliveryServices;
+using System.Text.Json;
+using Qyrenx.Business.DTOs.Deliverypersons;
+using Qyrenx.Business.DTOs.VendorActiveDto;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -20,13 +25,17 @@ namespace Qyrenx.Business.Services.VendorServices
 		private readonly ICloudinaryService _cloudinaryService;
 		private readonly IJwtService _jwtService;
 		private readonly IEmailServices _emailServices;
-        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices)
+        private readonly IDbAccess _dbAccess;
+        private readonly IDeliveryService _deliveryService;
+        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDbAccess dbAccess,IDeliveryService deliveryService)  
         {
             _context = context;
 			_mapper = mapper;
 			_cloudinaryService= cloudinaryService;
 			_jwtService=jwtService;
 			_emailServices=emailServices;
+            _dbAccess = dbAccess;
+            _deliveryService = deliveryService;
         }
        
 
@@ -147,6 +156,9 @@ namespace Qyrenx.Business.Services.VendorServices
 					vendor.ShopeLicense = license;
 					_context.Vendors.Add(vendor);
 					await _context.SaveChangesAsync();
+                    var data =await _dbAccess.GetAllVendor();
+                    var data1=data.FirstOrDefault(p=>p.Email == registerDto.Email);
+                    await VendorActivity(data1.Id);
 					return "registered successfully";
 				}
 				return "wrong otp";
@@ -204,6 +216,7 @@ namespace Qyrenx.Business.Services.VendorServices
 				}
 				vendor.IsVerified= true;
 				await _context.SaveChangesAsync();
+                await VendorActivity(id)    ;
 				await _emailServices.SendVerifiedmsg(vendor.Role,vendor.Name,vendor.Email);
 				return true;
 			}
@@ -321,6 +334,128 @@ namespace Qyrenx.Business.Services.VendorServices
                 throw new Exception($"An error occurred while adding the category for the vendor: {ex.Message}", ex);
             }
         }
+
+
+        public async Task<VendorOnline> VendorActivity(Guid id)
+        {
+            try
+            {
+                var data = await _dbAccess.GetAllVendorOnline();
+                var vendor = data.FirstOrDefault(p => p.VendorId == id);
+                var vendorAddress= await _dbAccess.GetAllVendorAddresses();
+                var adrs=vendorAddress.FirstOrDefault(p => p.VendorId == id);
+
+                if (vendor == null)
+                {
+                    return new VendorOnline
+                    {
+                        IsActive=true,
+                        VendorId=id,
+                        Lat=GetCoordinatesFromAddress(adrs).Result.lat, 
+                        Long=GetCoordinatesFromAddress(adrs).Result.lon
+                    };
+                }
+
+
+                return new VendorOnline();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred while adding the category for the vendor: {ex.Message}", ex);
+            }
+        }
+
+
+
+
+        private async Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(VendorAddress address)
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("YourAppName/1.0");
+
+                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(GetFullAddress(address))}&format=json";
+                var response = await httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to fetch coordinates. Error: {errorContent}");
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var data = JsonSerializer.Deserialize<List<GeoResponse>>(json);
+
+                if (data == null || !data.Any())
+                    throw new Exception($"No coordinates found for the address.{GetFullAddress(address)}");
+
+                decimal lat = Convert.ToDecimal(data[0].Lat);
+                decimal lon = Convert.ToDecimal(data[0].Lon);
+
+                return (lat, lon);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in fetching coordinates: {ex.Message}", ex);
+            }
+        }
+
+        private string GetFullAddress(VendorAddress address)
+        {
+            return $"{address.City},{address.PostalCode}";
+        }
+
+        public class GeoResponse
+        {
+            public string Lat { get; set; }
+            public string Lon { get; set; }
+        }
+        public async Task<Guid> GetNearestVendorPerson(Guid id)
+        {
+            var user = await _dbAccess.GetAllAddressAddresses();
+            var userAddress = user.FirstOrDefault(p => p.Id == id);
+            var (UserLat, UserLon) = await _deliveryService.GetCoordinatesFromAddress(userAddress);
+            var Persons = await _dbAccess.GetAllVendorOnline();
+            var ActivepPersons=Persons.Where(p=>p.IsActive==true).ToList();
+            if (ActivepPersons == null)
+            {
+                throw new Exception("No active delivery persons available.");
+
+            }
+            VendorOnline nearestVendorPerson = null;
+            double shortestDistance = double.MaxValue;
+            foreach (var dp in ActivepPersons)
+            {
+                double distance = CalculateDistance(
+                    UserLat, UserLon,
+                    dp.Lat, dp.Long
+                );
+
+                if (distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    nearestVendorPerson = dp;
+                }
+            }
+
+            return nearestVendorPerson.VendorId;
+        }
+        private double CalculateDistance(decimal lat1, decimal lon1, decimal lat2, decimal lon2)
+        {
+            const double R = 6371; // Radius of Earth in kilometers
+            double dLat = ToRadians((double)(lat2 - lat1));
+            double dLon = ToRadians((double)(lon2 - lon1));
+
+            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                       Math.Cos(ToRadians((double)lat1)) * Math.Cos(ToRadians((double)lat2)) *
+                       Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            return R * c; // Distance in kilometers
+        }
+
+        private double ToRadians(double angle) => Math.PI * angle / 180.0;
 
     }
 }

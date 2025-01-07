@@ -32,6 +32,7 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
         public DbSet<VendorPayment> VendorPayment { get; set; } 
         public DbSet<AccountsVendorDelivery> AccountsVendorDeliveries { get; set; }
         public DbSet<OrderGadget> OrderGadgets { get; set; }
+        public DbSet<VendorOnline> VendorOnline { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -132,6 +133,10 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
                 .HasOne(e=>e.VendorAddress)
                 .WithOne(e=>e.Vendor)
                 .HasForeignKey<VendorAddress>(e=>e.VendorId);
+            modelBuilder.Entity<VendorOnline>()
+                .HasOne(p=>p.Vendor)
+                .WithOne(p=>p.VendorOnline)
+                .HasForeignKey<VendorOnline>(e=>e.VendorId).OnDelete(DeleteBehavior.NoAction);
 
 
             //---------------------------------Gadget-------------------------------------------------------------

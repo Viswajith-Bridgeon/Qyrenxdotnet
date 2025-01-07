@@ -155,17 +155,18 @@ namespace Qyrenx.Business.Services.UserSecurityPay
                     await _context.SaveChangesAsync();
 
                     // Check if VendorId is valid
-                    var vendorId = await _vendorServices.VendorAssign(gad.CategoryId);
-                    if (vendorId == null)
-                    {
-                        throw new Exception("No valid vendor found for the given category");
-                    }
+                    //var vendorId = await _vendorServices.VendorAssign(gad.CategoryId);
+                    //if (vendorId == null)
+                    //{
+                    //    throw new Exception("No valid vendor found for the given category");
+                    //}
 
                     // Check if DeliveryPersonId is valid
                     var deliveryPersonId = await _deliveryService.GetNearestDeliveryPerson(gad.AddressId);
-                    if (deliveryPersonId == null)
+                    var vendorid = await _vendorServices.GetNearestVendorPerson(gad.AddressId);
+                    if (deliveryPersonId == null||vendorid==null)
                     {
-                        throw new Exception("No valid delivery person found for the given address");
+                        throw new Exception("No valid delivery person or vendor found for the given address");
                     }
 
                     // Ensure DeliveryPersonId exists in the DeliveryPersons table
@@ -180,7 +181,7 @@ namespace Qyrenx.Business.Services.UserSecurityPay
                     var pick = new Pickup
                     {
                         GadgetId = ordergad.GadgetId,
-                        VendorId = vendorId,
+                        VendorId = vendorid,
                         DeliveryPersonId = deliveryPersonId
                     };
 

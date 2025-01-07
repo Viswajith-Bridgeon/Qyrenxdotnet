@@ -191,5 +191,17 @@ namespace Qyrenx.Dataccess.DbAccess
             }
         }
 
+        public async Task<List<VendorOnline>> GetAllVendorOnline()
+        {
+            try
+            {
+                var data=await _context.VendorOnline.ToListAsync();
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
     }
 }
