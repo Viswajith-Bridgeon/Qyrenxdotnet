@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.Models.DTOs.Deliverypersons;
 using Qyrenx.Business.Services.DeliveryServices;
 using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Dataccess.ApiResponses;
+using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
 namespace Qyrenx.present.Controllers
 {
@@ -14,10 +17,14 @@ namespace Qyrenx.present.Controllers
     {
         private  readonly IDeliveryService _deliveryService;
         private readonly IEmailServices _emailServices;
-        public DeliveryController(IDeliveryService deliveryService,IEmailServices emailServices)
+        private readonly QyrenxContext _context;
+        private readonly IJwtService _jwtService;
+        public DeliveryController(IDeliveryService deliveryService,IEmailServices emailServices,IJwtService jwtService, QyrenxContext qyrenxContext)
         {
             _deliveryService = deliveryService;
             _emailServices = emailServices;
+            _jwtService = jwtService;
+            _context = qyrenxContext;
         }
 
         [HttpPost("register")]
@@ -118,5 +125,28 @@ namespace Qyrenx.present.Controllers
         }
 
 
+
+        [HttpPost("refreshOfDeliveryPerson")]
+        public async Task<IActionResult> AccessTokenRefresh(string Refresh)
+        {
+            try
+            {
+                var user = await _context.DeliveryPersons.FirstOrDefaultAsync(e => e.RefreshToken == Refresh);
+                if (user == null || user.TokenExpiryTime <= DateTime.UtcNow)
+                {
+                    return Unauthorized("Invalid or expired refresh token.");
+                }
+
+
+                var token = _jwtService.GenerateJwt(user.Id, user.Email, user.Role);
+
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+
+            }
+        }
     }
 }
