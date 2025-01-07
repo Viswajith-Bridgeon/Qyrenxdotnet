@@ -16,6 +16,8 @@ using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.DTOs.VendorActiveDto;
 using CloudinaryDotNet.Actions;
 using Qyrenx.Business.DTOs;
+using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -363,12 +365,13 @@ namespace Qyrenx.Business.Services.VendorServices
 
                 if (vendor == null)
                 {
+                    var latlong = GetCoordinatesFromAddress(adrs.City, adrs.PostalCode);
                     var vonline= new VendorOnline
                     {
                         IsActive=true,
                         VendorId=id,
-                        Lat=GetCoordinatesFromAddress(adrs).Result.lat, 
-                        Long=GetCoordinatesFromAddress(adrs).Result.lon
+                        Lat=latlong.Result.lat,
+                        Long=latlong.Result.lon
                     };
                     await _context.VendorOnline.AddAsync(vonline);
                     await _context.SaveChangesAsync();
@@ -387,14 +390,18 @@ namespace Qyrenx.Business.Services.VendorServices
 
 
 
-        private async Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(VendorAddress address)
+        private async Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(string city, string postalCode)
         {
             try
             {
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("YourAppName/1.0");
 
-                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(GetFullAddress(address))}&format=json";
+                var address = GetFullAddress(city, postalCode);
+                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(address)}&format=json";
+
+                Console.WriteLine($"Requesting: {url}");
+
                 var response = await httpClient.GetAsync(url);
 
                 if (!response.IsSuccessStatusCode)
@@ -407,10 +414,12 @@ namespace Qyrenx.Business.Services.VendorServices
                 var data = JsonSerializer.Deserialize<List<GeoResponse>>(json);
 
                 if (data == null || !data.Any())
-                    throw new Exception($"No coordinates found for the address.{GetFullAddress(address)}");
+                {
+                    throw new Exception($"No coordinates found for the address: {address}");
+                }
 
-                decimal lat = Convert.ToDecimal(data[0].Lat);
-                decimal lon = Convert.ToDecimal(data[0].Lon);
+                decimal lat = Convert.ToDecimal(data[0].Lat, CultureInfo.InvariantCulture);
+                decimal lon = Convert.ToDecimal(data[0].Lon, CultureInfo.InvariantCulture);
 
                 return (lat, lon);
             }
@@ -420,14 +429,17 @@ namespace Qyrenx.Business.Services.VendorServices
             }
         }
 
-        private string GetFullAddress(VendorAddress address)
+        private string GetFullAddress(string city, string postalCode)
         {
-            return $"{address.City},{address.PostalCode}";
+            return $"{city}, {postalCode}";
         }
 
         public class GeoResponse
         {
+            [JsonPropertyName("lat")]
             public string Lat { get; set; }
+
+            [JsonPropertyName("lon")]
             public string Lon { get; set; }
         }
         public async Task<Guid> GetNearestVendorPerson(Guid id)
