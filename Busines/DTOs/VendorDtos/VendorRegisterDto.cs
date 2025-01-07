@@ -15,7 +15,15 @@ namespace Qyrenx.Business.Models.DTOs.VendorDtos
 		public string? ShopeName { get; set; }
 		[Required]
 		public string? Password { get; set; }
-		public string? otp { get; set; }
+        [Required]
+        public string? House { get; set; }
+        [Required]
+        public string? City { get; set; }
+        [Required]
+        public string? LandMark { get; set; }
+        [Required]
+        public string? PostalCode { get; set; }
+        public string? otp { get; set; }
 
 	}
 }

@@ -16,6 +16,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Business.DTOs;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {
@@ -77,7 +78,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
             }
             
         }
-        public async Task<DeliveryPersonLoginViewDto>Login(DeliveryPersonLoginDto dto)
+        public async Task<AllLoginresponses>Login(DeliveryPersonLoginDto dto)
         {
             try
             {
@@ -95,16 +96,20 @@ namespace Qyrenx.Business.Services.DeliveryServices
                             if (exist.IsBlock == false)
                             {
                                 var token = _jwtServices.GenerateJwt(exist.Id, exist.Email, exist.Role);
-                                return new DeliveryPersonLoginViewDto { DeliveryPersonName = exist.Name, id = exist.Id, token = token };
+                                string refreshtoken=await _jwtServices.CreaterefreshToken(exist.Id, exist.Email, exist.Role);
+                                exist.RefreshToken = refreshtoken;
+                                exist.TokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                                await _context.SaveChangesAsync();
+                                return new AllLoginresponses { Name = exist.Name, Id = exist.Id, Token=token, refreshToken=refreshtoken};
 
                             }
-                            return new DeliveryPersonLoginViewDto { Error = "person is blocked " };
+                            return new AllLoginresponses { Error = "person is blocked " };
                         }
-                        return new DeliveryPersonLoginViewDto { Error = "persons verification is pending!" };
+                        return new AllLoginresponses { Error = "persons verification is pending!" };
                     }
-                    return new DeliveryPersonLoginViewDto { Error = "enter valid credentials" };
+                    return new AllLoginresponses { Error = "enter valid credentials" };
                 }
-                return new DeliveryPersonLoginViewDto { Error = "no such delivery person is registered" };
+                return new AllLoginresponses { Error = "no such delivery person is registered" };
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+using Qyrenx.Business.DTOs;
 using Qyrenx.Business.Models.DTOs.UserDTO;
 using Qyrenx.Dataccess.ApiResponses;
 using Qyrenx.Dataccess.Models.Entities;
@@ -12,7 +13,7 @@ namespace Qyrenx.Business.Services.UserServices
         Task<string> registration([FromForm] UserDto user);
 
 
-        Task<User> login(string email, string password);
+        Task<AllLoginresponses> login(string email, string password);
 
 
         Task<List<UserViewDto>> GetUsers();
@@ -27,5 +28,7 @@ namespace Qyrenx.Business.Services.UserServices
         Task<bool>  ResetPassword(string Email, string password);
         
         Task<bool> DeleteUser(Guid id);
+
+
     }
 }

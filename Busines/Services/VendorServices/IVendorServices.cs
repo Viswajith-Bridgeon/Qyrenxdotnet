@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Http;
+using Qyrenx.Business.DTOs;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
 using Qyrenx.Dataccess.Models.Entities;
 
@@ -8,7 +9,7 @@ namespace Qyrenx.Business.Services.VendorServices
 	public interface IVendorServices
 	{
 		Task<string> RegisterVendor(VendorRegisterDto registerDto, IFormFile shopelicense);
-		Task<VendorLoginView> LoginVendor(VendorLogin loginDto);
+		Task<AllLoginresponses> LoginVendor(VendorLogin loginDto);
 		Task<IEnumerable<VendorAdminViewDto>> GetVendor();
 		Task<IEnumerable<VendorAdminViewDto>> GetVendorNotVerified();
 		Task<VendorAdminViewDto> GetVendorById(Guid id);
@@ -16,7 +17,6 @@ namespace Qyrenx.Business.Services.VendorServices
 		Task<bool> BlockVendor(Guid id);
 		Task<bool> UnblockVendor(Guid id);
 		Task<bool> VerificationVendor(Guid id);
-
         Task<Guid> VendorAssign(Guid catid);
         Task<bool> CategoryAddvendor(Guid id, Guid catid);
         Task <VendorOnline> VendorActivity(Guid id);

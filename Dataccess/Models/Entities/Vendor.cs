@@ -2,7 +2,7 @@
 
 namespace Qyrenx.Dataccess.Models.Entities
 {
-    public class Vendor: AuditableEntity
+    public class Vendor: AuditableEntityJwt
     {
         public Guid Id { get; set; }
         public string Name { get; set; }

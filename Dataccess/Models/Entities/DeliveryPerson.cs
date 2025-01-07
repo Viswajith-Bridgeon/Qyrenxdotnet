@@ -1,6 +1,6 @@
 ﻿    namespace Qyrenx.Dataccess.Models.Entities
     {
-    public class DeliveryPerson: AuditableEntity
+    public class DeliveryPerson: AuditableEntityJwt
     {
         public Guid Id { get; set; }
         public Guid PickupId { get; set; }

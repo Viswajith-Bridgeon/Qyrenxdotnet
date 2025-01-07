@@ -9,6 +9,8 @@ using Qyrenx.Business.Models.DTOs.UserDTO;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Business.DTOs;
+using Qyrenx.Business.Services.JwtServices;
 
 
 namespace Qyrenx.Business.Services.UserServices
@@ -19,12 +21,14 @@ namespace Qyrenx.Business.Services.UserServices
         private readonly IMapper _mapper;
         private readonly IEmailServices _emailServices;
         private readonly IDbAccess _dbAccess;
-        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices, IDbAccess dbAccess)
+        private readonly IJwtService _jwtService;
+        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices, IDbAccess dbAccess, IJwtService jwtService)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _emailServices = emailServices;
             _dbAccess = dbAccess;
+            _jwtService = jwtService;
         }
 
         public async Task<string> registration(UserDto user)
@@ -72,22 +76,40 @@ namespace Qyrenx.Business.Services.UserServices
 
 
 
-        public async Task<User> login(string email, string password)
+        public async Task<AllLoginresponses> login(string email, string password)
         {
             try
             {
                 var p = await _mainDbContext.Users.FirstOrDefaultAsync(e => e.Email == email);
                 if (p == null)
                 {
-                    return new User();
+                    return new AllLoginresponses { Error = "Not Found" };
                 }
                 bool pass = BCrypt.Net.BCrypt.Verify(password, p.HashPassword);
                 if (!pass)
                 {
-                    return new User();
+                    return new AllLoginresponses { Error = "Invalid Password" };
 
                 }
-                return p;
+                if (p.IsBlock == true)
+                {
+                    return new AllLoginresponses { Error = "User Blocked" };
+                }
+                string token =_jwtService.GenerateJwt(p.Id,p.Email,p.Role);
+                string RefreshToken = await _jwtService.CreaterefreshToken(p.Id, p.Email, p.Role);
+                p.RefreshToken = RefreshToken;
+                p.TokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                await _mainDbContext.SaveChangesAsync();
+                return new AllLoginresponses
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Email = p.Email,
+                    Role = p.Role,
+                    Token = token,
+                    refreshToken = RefreshToken
+                };
+
             }
             catch (Exception ex)
             {
@@ -262,7 +284,10 @@ namespace Qyrenx.Business.Services.UserServices
             }
         }
 
-          
+
+
+    
+
 
     }
 }

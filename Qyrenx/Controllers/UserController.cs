@@ -3,12 +3,15 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Qyrenx.Business.DTOs;
 using Qyrenx.Business.Models.DTOs.UserDTO;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Business.Services.UserServices;
 using Qyrenx.Dataccess.ApiResponses;
+using Qyrenx.Dataccess.ApplicationDbContext;
 using System.Text.RegularExpressions;
 
 namespace Qyrenx.present.Controllers
@@ -22,15 +25,17 @@ namespace Qyrenx.present.Controllers
         private readonly IUserServices _userServices;
         private readonly IConfiguration _configuration;
         public readonly IJwtService _jwtService;
+        private readonly QyrenxContext _context;
 
 
-        public UserController( IConfiguration configuration,IUserServices userServices, IEmailServices emailServices , IJwtService jwtService )
+        public UserController( IConfiguration configuration,IUserServices userServices, IEmailServices emailServices , IJwtService jwtService , QyrenxContext context )
         {
          
             _configuration = configuration;
             _userServices = userServices;
             _emailServices = emailServices;
             _jwtService = jwtService;
+            _context = context;
         }
 
 
@@ -87,20 +92,22 @@ namespace Qyrenx.present.Controllers
         {
             try
             {
-                var user = await _userServices.login(email, password);
-                if (user.IsBlock)
+                var res=await _userServices.login(email, password);
+
+                if (res.Error == "Not Found")
                 {
-                    var res = new ApiResponse<string>(409, "user is block");
-                    return StatusCode(res.StatusCode, res);
+                    return NotFound(new ApiResponse<string>(404, "NotFound", null, "Please SignUp, user not found"));
+                }
+                if (res.Error == "User Blocked")
+                {
+                    return StatusCode(403, new ApiResponse<string>(403, "Forbiden", null, "User is blocked by admin"));
+                }
+                if (res.Error == "Invalid password")
+                {
+                    return BadRequest(new ApiResponse<string>(400, "BadRequest", null, res.Error));
                 }
 
-                if (user.Name == null)
-                {
-                    var res = new ApiResponse<string>(404, "invalid email or password");
-                    return StatusCode(res.StatusCode, res);
-                }
-                string token =  _jwtService.GenerateJwt(user.Id, user.Email, user.Role);
-                return Ok(new ApiResponse<object>(200,"successfully login", new { user.Name, user.Email, user.Role ,token}) );
+                return Ok(new ApiResponse<AllLoginresponses>(200, "Login successfully", res));
 
 
             }
@@ -309,6 +316,36 @@ namespace Qyrenx.present.Controllers
                 return StatusCode(500, r);
             }
         }
+
+
+
+        [HttpPost("refreshOfuser")]
+        public async Task<IActionResult> AccessTokenRefresh(string Refresh)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(e => e.RefreshToken == Refresh);
+                if (user == null || user.TokenExpiryTime <= DateTime.UtcNow)
+                {
+                    return Unauthorized("Invalid or expired refresh token.");
+                }
+
+
+                var token = _jwtService.GenerateJwt(user.Id, user.Email, user.Role);
+
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
+
+
+
+
 
     }
 }

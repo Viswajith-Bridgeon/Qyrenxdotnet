@@ -1,6 +1,6 @@
 ﻿namespace Qyrenx.Dataccess.Models.Entities
 {
-    public class User: AuditableEntity
+    public class User: AuditableEntityJwt
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
