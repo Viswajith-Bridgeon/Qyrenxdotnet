@@ -4,6 +4,7 @@ using Qyrenx.Business.DTOs.AddressDtos;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Dataccess.DbAccess.AddressRepo;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -18,11 +19,13 @@ namespace Qyrenx.Business.Services.AddressServices
         private readonly QyrenxContext _mainDbContext;
         private readonly IMapper _mapper;
         private readonly IDbAccess _dbAccess;
-        public AddressServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailService, IDbAccess dbAccess)    
+        private readonly IAddress _Addres;
+        public AddressServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailService, IDbAccess dbAccess,IAddress address)    
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _dbAccess = dbAccess;
+            _Addres = address;
         }
 
 
@@ -55,8 +58,7 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var data = await _dbAccess.GetAllAddressAddresses();
-                var address=data.Where(x => x.UserId == Id).ToList();
+                var address = await _Addres.GetAddressById(Id);
                 return _mapper.Map<List<AddressViewDto>>(address);
             }
             catch (Exception ex)

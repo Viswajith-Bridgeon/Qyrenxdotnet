@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.DbAccess;
 using Qyrenx.Business.DTOs;
+using Qyrenx.Dataccess.DbAccess.DeliveryRepo;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {
@@ -31,8 +32,9 @@ namespace Qyrenx.Business.Services.DeliveryServices
         private readonly IEmailServices _emailServices;
         private readonly IDbAccess _dbAccess;
         private object format;
+        private readonly IdeliveryRepo _deliveryRepo;
 
-        public DeliveryService(QyrenxContext context, IConfiguration configuration, IMapper autoMapping,IJwtService jwtService,ILogger<DeliveryService> logger,ICloudinaryService cloudinaryService,IEmailServices emailServices,IDbAccess dbAccess)    
+        public DeliveryService(QyrenxContext context, IConfiguration configuration, IMapper autoMapping,IJwtService jwtService,ILogger<DeliveryService> logger,ICloudinaryService cloudinaryService,IEmailServices emailServices,IDbAccess dbAccess,IdeliveryRepo ideliveryRepo)    
         {
             _autoMapping = autoMapping;
             _context = context; 
@@ -42,35 +44,26 @@ namespace Qyrenx.Business.Services.DeliveryServices
             _cloudinaryService = cloudinaryService; 
             _emailServices = emailServices;
             _dbAccess = dbAccess;
+            _deliveryRepo= ideliveryRepo;
+            
         }
-        public async Task <bool> Register(DeliveryPersonRegDto dto,IFormFile license)
+        public async Task <string> Register(DeliveryPersonRegDto dto,IFormFile license)
         {
             try
             {
-                var data = await _dbAccess.GetAllDeliveryPerson();
-                var exist =  data.FirstOrDefault(p => p.Email == dto.Email);
-                if (exist != null)
-                {
-                    return false;
-                }
                 var verify = _emailServices.verifyOtp(dto.Email, dto.Otp);
-
-                if (verify) 
+                if(verify)
                 {
-                    var lisemce = await _cloudinaryService.UploadDocumentAsync(license);
-                    var mapdata = new DeliveryPerson
+                    var file = await _cloudinaryService.UploadDocumentAsync(license);
+                    var delmapped = _autoMapping.Map<DeliveryPerson>(dto);
+                    var ret=await _deliveryRepo.Register(delmapped, file);
+                    if(ret=="success!")
                     {
-                        Name = dto.DeliveryPersonName,
-                        Email = dto.Email,
-                        DrivingLicense = lisemce,
-                        HashPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                        Mobile = dto.Mobile
-                    };
-                    _context.DeliveryPersons.Add(mapdata);
-                    await _context.SaveChangesAsync();
-                    return true;
-                }
-                return false;
+                        return "success";
+                    }
+                    return "failed";
+                }                
+                return "failed";
             }
             catch (Exception ex) 
             {
@@ -144,7 +137,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var deliverypersons =  await _dbAccess.GetAllDeliveryPerson();
+                var deliverypersons =  await _deliveryRepo.GetAllDeliveryPeresons();
                 if(deliverypersons != null)
                 {
                     return deliverypersons.Select(p => new DeliveryPersonDto
@@ -171,22 +164,23 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var data = await _dbAccess.GetAllDeliveryPerson();
-                var deliveryperson= data.FirstOrDefault(p=>p.Id==id);
+                var deliveryperson = await _deliveryRepo.GetDeliveryPeresonById(id);
                 if(deliveryperson != null)
                 {
-                    return new DeliveryPersonDto
-                    {
-                        Id=deliveryperson.Id,
-                        Name = deliveryperson.Name, 
-                        IsBlock = deliveryperson.IsBlock,
-                        IsVerified = deliveryperson.IsVerified,                      
-                        Email = deliveryperson.Email,   
-                        Mobile = deliveryperson.Mobile, 
-                        DrivingLicense= deliveryperson.DrivingLicense,
-                        Role = deliveryperson.Role
-                       
-                    };
+                    var map=_autoMapping.Map<DeliveryPersonDto>(deliveryperson);
+                    //return new DeliveryPersonDto
+                    //{
+                    //    Id=deliveryperson.Id,
+                    //    Name = deliveryperson.Name, 
+                    //    IsBlock = deliveryperson.IsBlock,
+                    //    IsVerified = deliveryperson.IsVerified,                      
+                    //    Email = deliveryperson.Email,   
+                    //    Mobile = deliveryperson.Mobile, 
+                    //    DrivingLicense= deliveryperson.DrivingLicense,
+                    //    Role = deliveryperson.Role
+
+                    //};
+                    return map;
                 }
                 return null;
 
@@ -200,15 +194,13 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var data = await _dbAccess.GetAllDeliveryPerson();
-                var exist =  data.FirstOrDefault(p=>p.Id==id);
-                if (exist != null)
+                var data=await _deliveryRepo.BlockOrUnblock(id);
+                if (data)
                 {
-                    exist.IsBlock = !exist.IsBlock;
-                    _context.SaveChangesAsync();
                     return true;
                 }
                 return false;
+                
             }
             catch (Exception ex) 
             {

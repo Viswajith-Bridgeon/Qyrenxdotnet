@@ -18,6 +18,8 @@ using CloudinaryDotNet.Actions;
 using Qyrenx.Business.DTOs;
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Qyrenx.Dataccess.DbAccess.VendorRepo;
+using Qyrenx.Dataccess.DbAccess.CategoryRepo;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -31,7 +33,9 @@ namespace Qyrenx.Business.Services.VendorServices
 		private readonly IEmailServices _emailServices;
         private readonly IDbAccess _dbAccess;
         private readonly IDeliveryService _deliveryService;
-        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDbAccess dbAccess,IDeliveryService deliveryService)  
+        private readonly IVendorRepo _vendorRepo;
+        private readonly ICategory _category;
+        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDbAccess dbAccess,IDeliveryService deliveryService,IVendorRepo vendorRepo,ICategory category)  
         {
             _context = context;
 			_mapper = mapper;
@@ -40,6 +44,8 @@ namespace Qyrenx.Business.Services.VendorServices
 			_emailServices=emailServices;
             _dbAccess = dbAccess;
             _deliveryService = deliveryService;
+            _vendorRepo = vendorRepo;
+            _category = category;
         }
        
 
@@ -67,7 +73,7 @@ namespace Qyrenx.Business.Services.VendorServices
 		{
 			try
 			{
-				var exist = await _context.Vendors.FirstOrDefaultAsync(e=>e.Id==id);
+				var exist = await _vendorRepo.GetVendorById(id);
 				if (exist == null)
 					return new VendorAdminViewDto { };
 				var vendor = _mapper.Map<VendorAdminViewDto>(exist);
@@ -79,29 +85,29 @@ namespace Qyrenx.Business.Services.VendorServices
 			}
 		}
 
-		public async Task<IEnumerable<VendorAdminViewDto>> GetVendorByShopeName(string name)
-		{
-			var vendors = _context.Vendors.Where(c => c.ShopeName.ToLower().Contains(name.ToLower()));
-			if (!vendors.Any())
-			{
-				return Enumerable.Empty<VendorAdminViewDto>();
-			}
-			var vendor = vendors.Select(v => new VendorAdminViewDto
-			{
-				Id = v.Id,
-				Name = v.Name,
-				ShopeName = v.ShopeName,
-				ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
-				Mobile = v.Mobile,
-				Email = v.Email,
-                IsBlock= v.IsBlock,
-			});
-			return vendor.ToList();
-		}
+		//public async Task<IEnumerable<VendorAdminViewDto>> GetVendorByShopeName(string name)
+		//{
+		//	var vendors = _context.Vendors.Where(c => c.ShopeName.ToLower().Contains(name.ToLower()));
+		//	if (!vendors.Any())
+		//	{
+		//		return Enumerable.Empty<VendorAdminViewDto>();
+		//	}
+		//	var vendor = vendors.Select(v => new VendorAdminViewDto
+		//	{
+		//		Id = v.Id,
+		//		Name = v.Name,
+		//		ShopeName = v.ShopeName,
+		//		ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
+		//		Mobile = v.Mobile,
+		//		Email = v.Email,
+  //              IsBlock= v.IsBlock,
+		//	});
+		//	return vendor.ToList();
+		//}
 
 		public async Task<IEnumerable<VendorAdminViewDto>> GetVendorNotVerified()
 		{
-			var vendors = _context.Vendors.Where(v => v.IsVerified == false);
+			var vendors = await _vendorRepo.GetVendorNotVerified();
 			var vendor = vendors.Select(v => new VendorAdminViewDto
 			{
 				Id = v.Id,
@@ -119,7 +125,7 @@ namespace Qyrenx.Business.Services.VendorServices
 		{
 			try
 			{
-				var exist = await _context.Vendors.SingleOrDefaultAsync(p => p.Email == loginDto.Email);
+				var exist = await _vendorRepo.GetVendorByMail(loginDto.Email);
 				if (exist != null)
 				{
 					if (BCrypt.Net.BCrypt.Verify(loginDto.Password, exist.HashPassword))
@@ -154,30 +160,29 @@ namespace Qyrenx.Business.Services.VendorServices
 			try
 			{
 
-				var exist = await _context.Vendors.FirstOrDefaultAsync(c => c.Email == registerDto.Email);
+                bool emailverify = _emailServices.verifyOtp(registerDto.Email, registerDto.otp);
+                var exist = await _vendorRepo.GetVendorByMail(registerDto.Email);
 				if (exist != null)
 				{
 					return "vendor already exist";
 				}
-				bool emailverify = _emailServices.verifyOtp(registerDto.Email, registerDto.otp);
 				if (emailverify)
 				{
 					var license = await _cloudinaryService.UploadDocumentAsync(shopelicense);
-					var vendor = _mapper.Map<Vendor>(registerDto);
-					vendor.HashPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
-					vendor.ShopeLicense = license;
-					_context.Vendors.Add(vendor);
-                    await _context.SaveChangesAsync();
-                    var vendoraddress=_mapper.Map<VendorAddress>(registerDto);
-                    vendoraddress.Role = "Vendor";
-                    var ven_id = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == registerDto.Email);
-                    vendoraddress.VendorId = ven_id.Id;
-                    _context.VendorAddresses.Add(vendoraddress);
-					await _context.SaveChangesAsync();
-                    var data =await _dbAccess.GetAllVendor();
-                    var data1=data.FirstOrDefault(p=>p.Email == registerDto.Email);
-                    await VendorActivity(data1.Id);
-					return "registered successfully";
+                    var vendorreg = await _vendorRepo.VendorRegistration(exist);
+                    if (vendorreg != null)
+                    {
+                        var vendoraddress = _mapper.Map<VendorAddress>(registerDto);
+                        var result = await _vendorRepo.AddVendorAddress(vendoraddress, exist);
+                        if (result == true)
+                        {
+                            var data1 = await _vendorRepo.GetVendorByMail(registerDto.Email);
+                            await VendorActivity(data1.Id);
+                            return "registered successfully";
+                        }
+                        return "something went wrong";
+                    }
+                    
 				}
 				return "wrong otp";
 			}
@@ -186,56 +191,42 @@ namespace Qyrenx.Business.Services.VendorServices
 				throw new Exception($"Registration Failed ,MSG {ex}");
 			}
 		}
-		public async Task<bool> BlockVendor(Guid id)
+		public async Task<bool> BlockOrUnblockVendor(Guid id)
 		{
 			try
 			{
-				var vendor = await _context.Vendors.FirstOrDefaultAsync(e=>e.Id==id);
-				if (vendor == null)
-				{
-					return false;
-				}
-				vendor.IsBlock = true;
-				await _context.SaveChangesAsync();
-				return true;
+				var vendor = await _vendorRepo.BlockOrUnblockVendor(id);
+				return vendor;
 			}
 			catch (Exception ex)
 			{
 				throw new Exception("There was an ERORR in block");
 			}
 		}
-		public async Task<bool> UnblockVendor(Guid id)
-		{
-			try
-			{
-				var vendor = await _context.Vendors.FindAsync(id);
-				if (vendor == null)
-				{
-					return false;
-				}
-				vendor.IsBlock = false;
-				await _context.SaveChangesAsync();
-				return true;
-			}
-			catch (Exception ex)
-			{
-				throw new Exception("There was an ERORR in unblock");
-			}
-		}
+		//public async Task<bool> UnblockVendor(Guid id)
+		//{
+		//	try
+		//	{
+		//		var vendor = await _context.Vendors.FindAsync(id);
+		//		if (vendor == null)
+		//		{
+		//			return false;
+		//		}
+		//		vendor.IsBlock = false;
+		//		await _context.SaveChangesAsync();
+		//		return true;
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		throw new Exception("There was an ERORR in unblock");
+		//	}
+		//}
 
 		public async Task<bool> VerificationVendor(Guid id)
 		{
 			try
 			{
-				var vendor = await _context.Vendors.FindAsync(id);
-				if (vendor == null)
-				{
-					return false;
-				}
-				vendor.IsVerified= true;
-				await _context.SaveChangesAsync();
-                await VendorActivity(id)    ;
-				await _emailServices.SendVerifiedmsg(vendor.Role,vendor.Name,vendor.Email);
+				var vendor = await _vendorRepo.VerificationVendor(id);
 				return true;
 			}
 			catch (Exception ex)
@@ -317,13 +308,13 @@ namespace Qyrenx.Business.Services.VendorServices
         {
             try
             {
-                var exist = await _context.Vendors.FirstOrDefaultAsync(v => v.Id == id);
+                var exist = await _vendorRepo.GetVendorById(id);
                 if (exist == null)
                 {
                     return false;
                 }
 
-                var catexist = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == catid);
+                var catexist = await _category.GetCategoryById(catid);
                 if (catexist == null)
                 {
                     return false;

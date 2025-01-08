@@ -13,7 +13,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
 {
     public interface IDeliveryService
     {
-        Task<bool> Register(DeliveryPersonRegDto regdto,IFormFile license);
+        Task<string> Register(DeliveryPersonRegDto regdto,IFormFile license);
         Task<AllLoginresponses> Login(DeliveryPersonLoginDto logindto);
         Task<bool> verify(string mail);
         Task<IEnumerable<DeliveryPersonDto>>GetAllDeliveryPeresons();
@@ -24,7 +24,6 @@ namespace Qyrenx.Business.Services.DeliveryServices
         Task<List<DeliveryPersonOnlineDto>> GetActiveDeliveryPersons();
         Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(Address address);
         Task<Guid> GetNearestDeliveryPerson(Guid id);
-        //Task AssignPickupToNearestDeliveryPerson(string userAddress, Guid pickupId);
 
 
 

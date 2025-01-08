@@ -18,6 +18,11 @@ using Qyrenx.Business.Services.AddressServices;
 using Qyrenx.Business.Services.UserSecurityPay;
 using Qyrenx.Business.Services.GadgetServices;
 using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Dataccess.DbAccess.AddressRepo;
+using Qyrenx.Dataccess.DbAccess.DeliveryRepo;
+using Qyrenx.Dataccess.DbAccess.VendorRepo;
+using Qyrenx.Dataccess.DbAccess.CategoryRepo;
+using Qyrenx.Dataccess.DbAccess.UserRepo;
 
 namespace Qyrenx
 {
@@ -42,6 +47,11 @@ namespace Qyrenx
             builder.Services.AddScoped<IUserSecurityPaymentService, UserSecurityPaymentService>();
             builder.Services.AddScoped<IGadgetSerives, GadgetServices>();
             builder.Services.AddScoped<IDbAccess,DbAccesss>();
+            builder.Services.AddScoped<IAddress, AddressService>();
+            builder.Services.AddScoped<IdeliveryRepo, DeliveryServiceRepo>();
+            builder.Services.AddScoped<IVendorRepo, VendorServiceRepo>();
+            builder.Services.AddScoped<ICategory, CategoryServiceRepo>();
+            builder.Services.AddScoped<IuserRepo,UserRepoo>();
 
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
