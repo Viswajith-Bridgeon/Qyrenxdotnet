@@ -13,10 +13,9 @@ namespace Qyrenx.Business.Services.VendorServices
 		Task<IEnumerable<VendorAdminViewDto>> GetVendor();
 		Task<IEnumerable<VendorAdminViewDto>> GetVendorNotVerified();
 		Task<VendorAdminViewDto> GetVendorById(Guid id);
-		Task<IEnumerable<VendorAdminViewDto>> GetVendorByShopeName(string name);
-		Task<bool> BlockVendor(Guid id);
-		Task<bool> UnblockVendor(Guid id);
-		Task<bool> VerificationVendor(Guid id);
+		//Task<IEnumerable<VendorAdminViewDto>> GetVendorByShopeName(string name);
+        Task<bool> BlockOrUnblockVendor(Guid id);
+        Task<bool> VerificationVendor(Guid id);
         Task<Guid> VendorAssign(Guid catid);
         Task<bool> CategoryAddvendor(Guid id, Guid catid);
         Task <VendorOnline> VendorActivity(Guid id);

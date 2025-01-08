@@ -11,7 +11,7 @@ namespace Qyrenx.Business.Services.AddressServices
     {
 
 
-        Task<bool>  addAddress(Guid Id,AddressAddDto Dto);
+        Task<bool> addAddress(Guid Id,AddressAddDto Dto);
 
         Task<List<AddressViewDto>> ViewAddress(Guid Id);
 
