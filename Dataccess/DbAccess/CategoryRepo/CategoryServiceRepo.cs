@@ -59,6 +59,7 @@ namespace Qyrenx.Dataccess.DbAccess.CategoryRepo
         {
             try
             {
+               
                 var exist = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
                 if (exist != null)
                 {

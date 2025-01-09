@@ -10,6 +10,5 @@
         public string Role { get; set; } 
         public bool IsBlock { get; set; } 
         public bool IsVerified { get; set; }
-        public DateTime Date { get; set; } 
     }
 }
