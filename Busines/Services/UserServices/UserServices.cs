@@ -21,15 +21,13 @@ namespace Qyrenx.Business.Services.UserServices
         private readonly QyrenxContext _mainDbContext;
         private readonly IMapper _mapper;
         private readonly IEmailServices _emailServices;
-        private readonly IDbAccess _dbAccess;
         private readonly IJwtService _jwtService;
         private readonly IuserRepo _userRepo;
-        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices, IDbAccess dbAccess, IJwtService jwtService, IuserRepo userRepo)
+        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices, IJwtService jwtService, IuserRepo userRepo)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _emailServices = emailServices;
-            _dbAccess = dbAccess;
             _jwtService = jwtService;
             _userRepo = userRepo;
         }
@@ -169,7 +167,12 @@ namespace Qyrenx.Business.Services.UserServices
                 {
                     return new ApiResponse<string>(404, "user is not found");
                 }
-                    return new ApiResponse<string>(200, "Successfull");
+               if(us =="user is blocked")
+                {
+                    return new ApiResponse<string>(200,us);
+                }
+                return new ApiResponse<string>(200, us);
+
             }
             catch (Exception ex)
             {

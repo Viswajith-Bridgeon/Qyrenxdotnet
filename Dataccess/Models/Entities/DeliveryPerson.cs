@@ -3,7 +3,6 @@
     public class DeliveryPerson: AuditableEntityJwt
     {
         public Guid Id { get; set; }
-        public Guid PickupId { get; set; }
         public string Name { get; set; }
         public string DrivingLicense { get; set; }
         public string Email { get; set; }

@@ -23,15 +23,14 @@ namespace Qyrenx.Business.Services.GadgetServices
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IuserRepo _userRepo;
         private readonly IgadgetRepo _gadgetRepo;
-        private readonly IDbAccess _dbAccess;
+      
 
 
-        public GadgetServices(QyrenxContext qyrenxContext,IMapper mapper,ICloudinaryService cloudinaryService,IDbAccess dbAccess,IuserRepo userRepo,IgadgetRepo gadgetRepo)
+        public GadgetServices(QyrenxContext qyrenxContext,IMapper mapper,ICloudinaryService cloudinaryService,IuserRepo userRepo,IgadgetRepo gadgetRepo)
             {
           _qyrenxContext = qyrenxContext;
             _mapper = mapper;
             _cloudinaryService = cloudinaryService;
-            _dbAccess = dbAccess;
             _userRepo = userRepo;   
             _gadgetRepo = gadgetRepo;
         }
@@ -40,7 +39,6 @@ namespace Qyrenx.Business.Services.GadgetServices
         {
             try
             {
-                var data = await _dbAccess.GetAllUsers();
                 var user = await _userRepo.GetUserById(id);
                 if (user == null)
                 {
@@ -61,5 +59,19 @@ namespace Qyrenx.Business.Services.GadgetServices
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<List<GadgetviewDto>> GetAll()
+        {
+            try 
+            {
+                var data = await _gadgetRepo.Getgadgets();
+                return _mapper.Map<List<GadgetviewDto>>(data);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+
     }
 }

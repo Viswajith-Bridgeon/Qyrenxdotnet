@@ -60,7 +60,8 @@ namespace Qyrenx.Business.Services.AddressServices
             try
             {
                 var address = await _Addres.GetAddressById(Id);
-                return _mapper.Map<List<AddressViewDto>>(address);
+                var data=_mapper.Map<List<AddressViewDto>>(address);
+                return data;
             }
             catch (Exception ex)
             {
@@ -68,7 +69,11 @@ namespace Qyrenx.Business.Services.AddressServices
             }
         }
 
-
+        public async Task<Address> GetAddressByAddId(Guid Id)
+        {
+            var data=await _Addres.GetAddressByAddId(Id);
+            return data;
+        }
         public async Task<bool> UpdateAddrsss(Guid AddressId, AddressAddDto dto)
         {
             try
@@ -97,7 +102,7 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var address =await _Addres.GetAddressById(AddressId);
+                var address =await _Addres.GetAddressByAddId(AddressId);
                 if (address == null)
                 {
                     return false;

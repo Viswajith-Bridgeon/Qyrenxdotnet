@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
@@ -89,7 +90,7 @@ namespace Qyrenx.Dataccess.DbAccess.VendorRepo
                 var vendors = _context.Vendors.Where(v => v.IsVerified == false);
                 if(vendors.Any())
                      return vendors;
-                return null;
+                return Enumerable.Empty<Vendor>();
             }
             catch (Exception ex)
             {
@@ -140,12 +141,11 @@ namespace Qyrenx.Dataccess.DbAccess.VendorRepo
             }
 
         }
-        public async Task<bool> AddVendorAddress(VendorAddress address,Vendor exist)
+        public async Task<bool> AddVendorAddress(VendorAddress address)
         {
             try
             {
                 address.Role = "Vendor";
-                address.VendorId = exist.Id;
                 _context.VendorAddresses.Add(address);
                 await _context.SaveChangesAsync();
                 return true;
@@ -154,6 +154,31 @@ namespace Qyrenx.Dataccess.DbAccess.VendorRepo
             {
                 throw new Exception("There was an ERORR in VERIFICATION");
             }
+        }
+        public async Task<List<VendorOnline>> GetAllVendorOnline()
+        {
+            try
+            {
+                var data = await _context.VendorOnline.ToListAsync();
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+        public async Task<List<VendorAddress>> GetAllVendorAddresses()
+        {
+            try
+            {
+                var data = await _context.VendorAddresses.ToListAsync();
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+
         }
 
     }

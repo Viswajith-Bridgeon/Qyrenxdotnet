@@ -32,6 +32,15 @@ namespace Qyrenx.Business.Mapper
             CreateMap<VendorRegisterDto,VendorAddress>().ReverseMap();
             CreateMap<VendorCategoryAddDto,VendorCategory>().ReverseMap();
             CreateMap<DeliveryPerson, DeliveryPersonDto>().ReverseMap();
-        }
+            CreateMap <GadgetviewDto,Gadget>().ReverseMap();
+            CreateMap<PickupDto, Pickup>().ReverseMap()
+                .ForMember(e => e.AddressId, e => e.MapFrom(e => e.Gadget.AddressId))
+                .ForMember(e => e.UserId, e => e.MapFrom(e => e.Gadget.UserId))
+                 .ForMember(e => e.Image, e => e.MapFrom(e => e.Gadget.Image))
+                 .ForMember(e => e.GadgetName, e => e.MapFrom(e => e.Gadget.GadgetName))
+                  .ForMember(e => e.Description, e => e.MapFrom(e => e.Gadget.Description));
+
+
+    }
     }
 }

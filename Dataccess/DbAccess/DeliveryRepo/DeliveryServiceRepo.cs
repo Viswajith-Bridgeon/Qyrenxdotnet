@@ -36,7 +36,7 @@ namespace Qyrenx.Dataccess.DbAccess.DeliveryRepo
                         DrivingLicense = Icloud_file,
                         HashPassword = BCrypt.Net.BCrypt.HashPassword(person.HashPassword),
                         Mobile = person.Mobile
-                    };
+                     };
                     _context.DeliveryPersons.Add(mapdata);
                     await _context.SaveChangesAsync();
                     return "success!";

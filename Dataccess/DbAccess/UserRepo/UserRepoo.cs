@@ -74,9 +74,15 @@ namespace Qyrenx.Dataccess.DbAccess.UserRepo
                 {
                     return  "user is not found";
                 }
+                if (us.IsBlock)
+                {
+                    us.IsBlock = false;
+                    await _context.SaveChangesAsync();
+                    return "user is blocked";
+                }
                     us.IsBlock = !us.IsBlock;
                     await _context.SaveChangesAsync();
-                    return "SuccessfullyCompleted";
+                    return "user is unblocked";
             }
             catch (Exception ex)
             {

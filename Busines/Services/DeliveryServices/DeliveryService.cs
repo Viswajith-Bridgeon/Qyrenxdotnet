@@ -59,6 +59,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
                 {
                     var file = await _cloudinaryService.UploadDocumentAsync(license);
                     var delmapped = _autoMapping.Map<DeliveryPerson>(dto);
+                    delmapped.HashPassword = dto.Password;
                     var ret=await _deliveryRepo.Register(delmapped, file);
                     if(ret=="success!")
                     {
@@ -256,7 +257,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
                 {
                     return user.Select(p => new DeliveryPersonOnlineDto
                     {
-                        DeliveryPersonId= p.Id,
+                        DeliveryPersonId= p.DeliveryPersonId,
                         IsActive = p.IsActive,
                         Lat = p.Lat,
                         Long = p.Long
@@ -291,7 +292,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
 
         public async Task<Guid> GetNearestDeliveryPerson(Guid id)
         {
-            var userAddress =await _addressRepo.GetAddressById(id);
+            var userAddress =await _addressRepo.GetAddressByAddId(id);
             var (UserLat,UserLon)=await GetCoordinatesFromAddress(userAddress);
             var ActivepPersons = await GetActiveDeliveryPersons();
             if (ActivepPersons == null)
@@ -364,11 +365,6 @@ namespace Qyrenx.Business.Services.DeliveryServices
             return $"{address.City},{address.PostalCode}";
         }
 
-        public class GeoResponse
-        {
-            public string Lat { get; set; }
-            public string Lon { get; set; }
-        }
 
       
 

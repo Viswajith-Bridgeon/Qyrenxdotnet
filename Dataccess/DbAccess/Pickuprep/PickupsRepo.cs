@@ -1,0 +1,47 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
+using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Dataccess.Models.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Qyrenx.Dataccess.DbAccess.Pickuprep
+{
+    public class PickupsRepo: IpickupsRepo
+    {
+        private readonly QyrenxContext _context;
+        public PickupsRepo(QyrenxContext context)
+        {
+            _context = context;
+        }
+        public async Task<List<Pickup>> GetAllPickup()
+        {
+            try
+            {
+                var data=await _context.Pickups.Include(p => p.Gadget).ToListAsync();
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+        public async Task<Pickup> GetPickupById(Guid id)
+        {
+            try
+            {
+                var data=await _context.Pickups.FirstOrDefaultAsync(p => p.Id == id);
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+
+
+    }
+}

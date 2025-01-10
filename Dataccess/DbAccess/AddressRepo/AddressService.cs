@@ -55,11 +55,11 @@ namespace Qyrenx.Dataccess.DbAccess.AddressRepo
             }
         }
 
-        public async Task<Address> GetAddressById(Guid id)
+        public async Task<List<Address>> GetAddressById(Guid id)
         {
             try
             {
-                var address = await _context.Address.Where(x => x.UserId == id).FirstOrDefaultAsync();
+                var address = await _context.Address.Where(x => x.UserId == id).ToListAsync();
                 return address;
             }
             catch (Exception ex)
@@ -81,12 +81,12 @@ namespace Qyrenx.Dataccess.DbAccess.AddressRepo
             }
         }
 
-        public async Task<bool> UpdateAddress(Guid Aid,Address addres)
+        public async Task<bool> UpdateAddress( Guid Aid,Address addres)
         {
 
             try
             {
-                var address = await _context.Address.FirstOrDefaultAsync(e=> e.Id==Aid);
+                var address = await _context.Address.FirstOrDefaultAsync(e=>e.Id==Aid);
                 if (address == null)
                 {
                     return false;
@@ -106,5 +106,18 @@ namespace Qyrenx.Dataccess.DbAccess.AddressRepo
                 throw new Exception(ex.InnerException?.Message ?? ex.Message);
             }
         }
+        public async Task<Address> GetAddressByAddId(Guid Id)
+        {
+            try
+            {
+                var data=await _context.Address.FirstOrDefaultAsync(p=>p.Id==Id);
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
     }
 }
