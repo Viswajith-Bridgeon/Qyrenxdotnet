@@ -17,6 +17,9 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.DbAccess;
 using Qyrenx.Business.DTOs;
+using Qyrenx.Dataccess.DbAccess.DeliveryRepo;
+using Qyrenx.Dataccess.DbAccess.UserRepo;
+using Qyrenx.Dataccess.DbAccess.AddressRepo;
 
 namespace Qyrenx.Business.Services.DeliveryServices
 {
@@ -29,10 +32,11 @@ namespace Qyrenx.Business.Services.DeliveryServices
         private readonly ILogger<DeliveryService> _logger;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IEmailServices _emailServices;
-        private readonly IDbAccess _dbAccess;
-        private object format;
+        private readonly IdeliveryRepo _deliveryRepo;
+        private readonly IuserRepo _userRepo;
+        private readonly IAddress _addressRepo; 
 
-        public DeliveryService(QyrenxContext context, IConfiguration configuration, IMapper autoMapping,IJwtService jwtService,ILogger<DeliveryService> logger,ICloudinaryService cloudinaryService,IEmailServices emailServices,IDbAccess dbAccess)    
+        public DeliveryService(QyrenxContext context, IConfiguration configuration, IMapper autoMapping,IJwtService jwtService,ILogger<DeliveryService> logger,ICloudinaryService cloudinaryService,IEmailServices emailServices,IdeliveryRepo ideliveryRepo,IuserRepo repo,IAddress address)  
         {
             _autoMapping = autoMapping;
             _context = context; 
@@ -41,36 +45,29 @@ namespace Qyrenx.Business.Services.DeliveryServices
             _logger = logger;
             _cloudinaryService = cloudinaryService; 
             _emailServices = emailServices;
-            _dbAccess = dbAccess;
+            _deliveryRepo= ideliveryRepo;
+            _userRepo= repo;
+            _addressRepo= address;
+            
         }
-        public async Task <bool> Register(DeliveryPersonRegDto dto,IFormFile license)
+        public async Task <string> Register(DeliveryPersonRegDto dto,IFormFile license)
         {
             try
             {
-                var data = await _dbAccess.GetAllDeliveryPerson();
-                var exist =  data.FirstOrDefault(p => p.Email == dto.Email);
-                if (exist != null)
-                {
-                    return false;
-                }
                 var verify = _emailServices.verifyOtp(dto.Email, dto.Otp);
-
-                if (verify) 
+                if(verify)
                 {
-                    var lisemce = await _cloudinaryService.UploadDocumentAsync(license);
-                    var mapdata = new DeliveryPerson
+                    var file = await _cloudinaryService.UploadDocumentAsync(license);
+                    var delmapped = _autoMapping.Map<DeliveryPerson>(dto);
+                    delmapped.HashPassword = dto.Password;
+                    var ret=await _deliveryRepo.Register(delmapped, file);
+                    if(ret=="success!")
                     {
-                        Name = dto.DeliveryPersonName,
-                        Email = dto.Email,
-                        DrivingLicense = lisemce,
-                        HashPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                        Mobile = dto.Mobile
-                    };
-                    _context.DeliveryPersons.Add(mapdata);
-                    await _context.SaveChangesAsync();
-                    return true;
-                }
-                return false;
+                        return "success";
+                    }
+                    return "failed";
+                }                
+                return "failed";
             }
             catch (Exception ex) 
             {
@@ -85,7 +82,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
                 
                 _logger.LogInformation($"Searching for delivery person with email: {dto.Email}");
 
-                var data= await _dbAccess.GetAllDeliveryPerson();
+                var data= await _deliveryRepo.GetAllDeliveryPeresons();
                 var exist = data.SingleOrDefault(p => p.Email == dto.Email );
                 if (exist != null)
                 {
@@ -123,7 +120,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var data=await _dbAccess.GetAllDeliveryPerson();   
+                var data = await _deliveryRepo.GetAllDeliveryPeresons();   
                 var verification=data.FirstOrDefault(p=>p.Email.Equals(mail));
                 if(verification != null)
                 {
@@ -144,7 +141,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var deliverypersons =  await _dbAccess.GetAllDeliveryPerson();
+                var deliverypersons =  await _deliveryRepo.GetAllDeliveryPeresons();
                 if(deliverypersons != null)
                 {
                     return deliverypersons.Select(p => new DeliveryPersonDto
@@ -171,22 +168,22 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var data = await _dbAccess.GetAllDeliveryPerson();
-                var deliveryperson= data.FirstOrDefault(p=>p.Id==id);
+                var deliveryperson = await _deliveryRepo.GetDeliveryPeresonById(id);
                 if(deliveryperson != null)
                 {
-                    return new DeliveryPersonDto
+                    var map = new DeliveryPersonDto
                     {
-                        Id=deliveryperson.Id,
-                        Name = deliveryperson.Name, 
+                        Id = deliveryperson.Id,
+                        Name = deliveryperson.Name,
+                        DrivingLicense = deliveryperson.DrivingLicense,
+                        Email = deliveryperson.Email,
                         IsBlock = deliveryperson.IsBlock,
-                        IsVerified = deliveryperson.IsVerified,                      
-                        Email = deliveryperson.Email,   
-                        Mobile = deliveryperson.Mobile, 
-                        DrivingLicense= deliveryperson.DrivingLicense,
+                        IsVerified = deliveryperson.IsVerified,
+                        Mobile = deliveryperson.Mobile,
                         Role = deliveryperson.Role
-                       
                     };
+                   
+                    return map;
                 }
                 return null;
 
@@ -200,15 +197,13 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var data = await _dbAccess.GetAllDeliveryPerson();
-                var exist =  data.FirstOrDefault(p=>p.Id==id);
-                if (exist != null)
+                var data=await _deliveryRepo.BlockOrUnblock(id);
+                if (data)
                 {
-                    exist.IsBlock = !exist.IsBlock;
-                    _context.SaveChangesAsync();
                     return true;
                 }
                 return false;
+                
             }
             catch (Exception ex) 
             {
@@ -220,9 +215,9 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var data=await _dbAccess.GetAllDeliveryPerson();
+                var data=await _deliveryRepo.GetAllDeliveryPeresons();
                 var user = data.FirstOrDefault(p => p.Id == id);
-                var data1=await _dbAccess.GetAllDeliveryPersonOnline();
+                var data1=await _deliveryRepo.GetAllDeliveryPersonOnline();
                 var useronline = data1.FirstOrDefault(p => p.DeliveryPersonId == user.Id);
                 if (useronline != null)
                 {
@@ -257,12 +252,12 @@ namespace Qyrenx.Business.Services.DeliveryServices
         {
             try
             {
-                var user = await _dbAccess.GetAllDeliveryPersonOnline();
+                var user = await _deliveryRepo.GetAllDeliveryPersonOnline();
                 if (user != null)
                 {
                     return user.Select(p => new DeliveryPersonOnlineDto
                     {
-                        DeliveryPersonId= p.Id,
+                        DeliveryPersonId= p.DeliveryPersonId,
                         IsActive = p.IsActive,
                         Lat = p.Lat,
                         Long = p.Long
@@ -277,7 +272,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
         }
         public async Task<List<DeliveryPersonOnlineDto>> GetActiveDeliveryPersons()
         {
-            var data = await _dbAccess.GetAllDeliveryPersonOnline();
+            var data = await _deliveryRepo.GetAllDeliveryPersonOnline();
             var user = data.Where(p=>p.IsActive==true).ToList();
             if(user != null)
             {
@@ -297,8 +292,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
 
         public async Task<Guid> GetNearestDeliveryPerson(Guid id)
         {
-            var user=await _dbAccess.GetAllAddressAddresses();
-            var userAddress = user.FirstOrDefault(p=>p.Id==id);
+            var userAddress =await _addressRepo.GetAddressByAddId(id);
             var (UserLat,UserLon)=await GetCoordinatesFromAddress(userAddress);
             var ActivepPersons = await GetActiveDeliveryPersons();
             if (ActivepPersons == null)
@@ -371,11 +365,6 @@ namespace Qyrenx.Business.Services.DeliveryServices
             return $"{address.City},{address.PostalCode}";
         }
 
-        public class GeoResponse
-        {
-            public string Lat { get; set; }
-            public string Lon { get; set; }
-        }
 
       
 

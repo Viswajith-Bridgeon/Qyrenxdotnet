@@ -31,7 +31,7 @@ namespace Qyrenx.present.Controllers
         public async Task<IActionResult> Register([FromForm]DeliveryPersonRegDto regDto,IFormFile licence)
         {
             var res = await _deliveryService.Register(regDto,licence);
-            if (res)
+            if (res== "success")
             {
                 return Ok(new ApiResponse <string> (200,"success!"));
             }

@@ -4,6 +4,8 @@ using Qyrenx.Business.DTOs.AddressDtos;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Dataccess.DbAccess.AddressRepo;
+using Qyrenx.Dataccess.DbAccess.UserRepo;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -17,12 +19,14 @@ namespace Qyrenx.Business.Services.AddressServices
     {
         private readonly QyrenxContext _mainDbContext;
         private readonly IMapper _mapper;
-        private readonly IDbAccess _dbAccess;
-        public AddressServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailService, IDbAccess dbAccess)    
+        private readonly IAddress _Addres;
+        private readonly IuserRepo _userRepo;
+        public AddressServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailService,IAddress address,IuserRepo repo)    
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
-            _dbAccess = dbAccess;
+            _Addres = address;
+            _userRepo = repo;   
         }
 
 
@@ -30,7 +34,7 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var user = await _mainDbContext.Users.FindAsync(Id);
+                var user = await _userRepo.GetUserById(Id);
                 if (user == null)
                 {
                     return false;
@@ -55,9 +59,9 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var data = await _dbAccess.GetAllAddressAddresses();
-                var address=data.Where(x => x.UserId == Id).ToList();
-                return _mapper.Map<List<AddressViewDto>>(address);
+                var address = await _Addres.GetAddressById(Id);
+                var data=_mapper.Map<List<AddressViewDto>>(address);
+                return data;
             }
             catch (Exception ex)
             {
@@ -65,26 +69,27 @@ namespace Qyrenx.Business.Services.AddressServices
             }
         }
 
-
+        public async Task<Address> GetAddressByAddId(Guid Id)
+        {
+            var data=await _Addres.GetAddressByAddId(Id);
+            return data;
+        }
         public async Task<bool> UpdateAddrsss(Guid AddressId, AddressAddDto dto)
         {
             try
             {
-                var data = await _dbAccess.GetAllAddressAddresses();
-                var address =data.FirstOrDefault(x => x.Id == AddressId);
+                var address =await _Addres.GetAddressById(AddressId);
                 if(address == null)
                 {
                     return false;
                 }
-                var user =await _mainDbContext.Users.FirstOrDefaultAsync(p=>p.Id==address.UserId);
-                address.City = dto.City;
-                address.House = dto.House;
-                address.LandMark = dto.LandMark;
-                address.PostalCode = dto.PostalCode;
-                address.UpdatedOn=DateTime.Now;
-                address.UpdatedBy = user.Name;
-                await _mainDbContext.SaveChangesAsync();
-                return true;
+                var dat = _mapper.Map<Address>(dto);
+                var value= await _Addres.UpdateAddress(AddressId,dat);
+                if (value == true)
+                {
+                    return true;
+                }
+                return false;
             }
             catch (Exception ex)
             {
@@ -97,8 +102,7 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var data = await _dbAccess.GetAllAddressAddresses();
-                var address = data.FirstOrDefault(x => x.Id == AddressId);
+                var address =await _Addres.GetAddressByAddId(AddressId);
                 if (address == null)
                 {
                     return false;
@@ -121,8 +125,7 @@ namespace Qyrenx.Business.Services.AddressServices
         {
             try
             {
-                var data = await _dbAccess.GetAllAddressAddresses();
-                var addresss = data.FirstOrDefault(p=>p.Id==Aid);
+                var addresss = await _Addres.GetAddressById(Aid);
                 if(addresss==null)
                 {
                     return new AddressViewDto();

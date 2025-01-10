@@ -17,7 +17,5 @@ namespace Qyrenx.Dataccess.Models.Entities
         public string PostalCode { get; set; }
         public ICollection<Gadget> Gadgets { get; set; }
         public virtual User User { get; set; }
-
-    
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Qyrenx.Dataccess.Models.Entities
 {
-    public class Category
+    public class Category:AuditableEntity
     {
         public Guid CategoryId { get; set; }
         public string CategoryName { get; set; }

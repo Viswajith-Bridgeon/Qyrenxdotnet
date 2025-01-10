@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Qyrenx.Dataccess.DbAccess;
 using Qyrenx.Business.DTOs;
 using Qyrenx.Business.Services.JwtServices;
+using Qyrenx.Dataccess.DbAccess.UserRepo;
 
 
 namespace Qyrenx.Business.Services.UserServices
@@ -20,22 +21,22 @@ namespace Qyrenx.Business.Services.UserServices
         private readonly QyrenxContext _mainDbContext;
         private readonly IMapper _mapper;
         private readonly IEmailServices _emailServices;
-        private readonly IDbAccess _dbAccess;
         private readonly IJwtService _jwtService;
-        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices, IDbAccess dbAccess, IJwtService jwtService)
+        private readonly IuserRepo _userRepo;
+        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices, IJwtService jwtService, IuserRepo userRepo)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _emailServices = emailServices;
-            _dbAccess = dbAccess;
             _jwtService = jwtService;
+            _userRepo = userRepo;
         }
 
         public async Task<string> registration(UserDto user)
         {
             try
             {
-                var data = await _dbAccess.GetAllUsers();
+                var data = await _userRepo.GetUsers();
                 var isExist =data.FirstOrDefault(e => e.Email == user.Email);
 
                 if (isExist != null)
@@ -125,9 +126,8 @@ namespace Qyrenx.Business.Services.UserServices
         {
             try
             {
-                var data = await _dbAccess.GetAllUsers();
-                var u=data.Where(e => e.Role != "Admin").ToList();
-                return _mapper.Map<List<UserViewDto>>(u);
+                var data = await _userRepo.GetUsers();
+                return _mapper.Map<List<UserViewDto>>(data);
             }
             catch (Exception ex)
             {
@@ -140,16 +140,12 @@ namespace Qyrenx.Business.Services.UserServices
         {
             try
             {
-                var data = await _dbAccess.GetAllUsers();
-                   var user =  data.FirstOrDefault(p=>p.Id==id);
-                if (user == null)
+                var data = await _userRepo.GetUserById(id);
+                if (data == null)
                 {
                     return null;
                 }
-
-                return _mapper.Map<UserViewDto>(user);
-
-
+                return _mapper.Map<UserViewDto>(data);
             }
             catch (Exception ex)
             {
@@ -165,24 +161,18 @@ namespace Qyrenx.Business.Services.UserServices
         {
             try
             {
-                var data = await _dbAccess.GetAllUsers();
-                var us = data.FirstOrDefault(p=> p.Id==id);
-                if (us == null)
+                
+                var us = await _userRepo.BlockOrUnblock(id);
+                if (us == "user is not found")
                 {
                     return new ApiResponse<string>(404, "user is not found");
                 }
-                if (us.IsBlock)
+               if(us =="user is blocked")
                 {
-                    us.IsBlock = false;
-                    await _mainDbContext.SaveChangesAsync();
-                    return new ApiResponse<string>(200, "user is blocked");
+                    return new ApiResponse<string>(200,us);
                 }
-                else
-                {
-                    us.IsBlock = true;
-                    await _mainDbContext.SaveChangesAsync();
-                    return new ApiResponse<string>(200, "user is unblocked");
-                }
+                return new ApiResponse<string>(200, us);
+
             }
             catch (Exception ex)
             {
@@ -197,9 +187,8 @@ namespace Qyrenx.Business.Services.UserServices
         public async Task<List<UserViewDto>> SearchUsers(string name)
         {
             try
-            {
-                var data = await _dbAccess.GetAllUsers();
-                var users= data.Where(p => p.Name.ToLower().Contains(name.ToLower())).ToList();
+            { 
+                var users = _userRepo.SearchUsers(name);
                 return _mapper.Map<List<UserViewDto>>(users);
             }
             catch (Exception ex)
@@ -214,8 +203,8 @@ namespace Qyrenx.Business.Services.UserServices
         {
             try
             {
-                var data = await _dbAccess.GetAllUsers();
-                var user =data.FirstOrDefault(p => p.Id == id);
+                
+                var user = await _userRepo.GetUserById(id);
                 if (user == null)
                 {
                     return false;
@@ -239,8 +228,7 @@ namespace Qyrenx.Business.Services.UserServices
         {
             try
             {
-                var data = await _dbAccess.GetAllUsers();
-                var user = data.FirstOrDefault(u => u.Email == Email);
+                var user = await _userRepo.GetUserByEmail(Email);
                 if (user == null)
                 {
                     return false;
@@ -265,8 +253,7 @@ namespace Qyrenx.Business.Services.UserServices
         {
             try
             {
-                var data = await _dbAccess.GetAllUsers();
-                var user = data.FirstOrDefault(u => u.Id==id);
+                var user = await _userRepo.GetUserById(id);
                 if (user == null)
                 {
                     return false;

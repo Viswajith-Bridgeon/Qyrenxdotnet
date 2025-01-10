@@ -6,6 +6,8 @@ using Qyrenx.Business.Services.DeliveryServices;
 using Qyrenx.Business.Services.VendorServices;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Dataccess.DbAccess.GadgetRepo;
+using Qyrenx.Dataccess.DbAccess.UserSecurityPay;
 using Qyrenx.Dataccess.Models.Entities;
 using Razorpay.Api;
 using System;
@@ -18,14 +20,16 @@ namespace Qyrenx.Business.Services.UserSecurityPay
         private readonly IConfiguration _configuration;
         private readonly IVendorServices _vendorServices;
         private readonly IDeliveryService _deliveryService;
-        private readonly IDbAccess _dbAccess;
-        public UserSecurityPaymentService(QyrenxContext context,IConfiguration configuration, IVendorServices vendorServices,IDeliveryService delivery, IDbAccess dbAccess)
+        private readonly IgadgetRepo _gadgetRepo;
+        private readonly IuserSecurityRepo _userSecurityRepo;
+        public UserSecurityPaymentService(QyrenxContext context,IConfiguration configuration, IVendorServices vendorServices,IDeliveryService delivery,IgadgetRepo gadgetRepo,IuserSecurityRepo userSecurityRepo)
         {
             _configuration = configuration;
             _context = context;
             _vendorServices = vendorServices;
             _deliveryService = delivery;
-            _dbAccess = dbAccess;
+            _gadgetRepo = gadgetRepo;
+            _userSecurityRepo = userSecurityRepo;
         }
 
         public async Task<string> RazorOrderCreate(long price)
@@ -98,19 +102,19 @@ namespace Qyrenx.Business.Services.UserSecurityPay
                 try
                 {
                     // Check the number of gadgets for the user
-                    var data =await _dbAccess.GetAllGadgets();
+                    var data =await _gadgetRepo.Getgadgets();
                     var count = data.Count(c => c.UserId == id);
                     Gadget gad;
-                    var data1 = await _dbAccess.GetAllGadgets();
+                    
                     // Fetch the gadget based on count
                     if (count <= 1)
                     {
                        
-                       gad=data1.FirstOrDefault(c => c.UserId == id);
+                       gad=data.FirstOrDefault(c => c.UserId == id);
                     }
                     else
                     {
-                        gad = data1
+                        gad = data
                             .Where(c => c.UserId == id)
                             .OrderBy(c => c.CreatedOn)
                             .LastOrDefault();
@@ -134,7 +138,7 @@ namespace Qyrenx.Business.Services.UserSecurityPay
                     await _context.SaveChangesAsync();
 
                     // Retrieve the payment object to link with the gadget order
-                    var pay = await _dbAccess.GetAllUserSecurityPayment();
+                    var pay = await _userSecurityRepo.GetAllUserSecurityPayment();
                     var payid = pay.FirstOrDefault(c =>
                         c.TransactionId == inputorderDto.TransactionId &&
                         c.PaymentString == inputorderDto.PaymentString);
@@ -170,7 +174,7 @@ namespace Qyrenx.Business.Services.UserSecurityPay
                     }
 
                     // Ensure DeliveryPersonId exists in the DeliveryPersons table
-                    var person =await _dbAccess.GetAllDeliveryPersonOnline();
+                    var person =await _deliveryService.GetAllDeliveryPersonOnline();
                     var deliveryPersonExists = person
                     .FirstOrDefault(u => u.DeliveryPersonId == deliveryPersonId);
                     if (deliveryPersonExists==null)
@@ -187,7 +191,13 @@ namespace Qyrenx.Business.Services.UserSecurityPay
 
                     await _context.Pickups.AddAsync(pick);
                     await _context.SaveChangesAsync();
-
+                    var status = new Status
+                    {
+                        PickupId = pick.Id,
+                        Statuss = "payment successfull waiting for Deliveryperson"
+                    };
+                    await _context.Status.AddAsync(status);
+                    await _context.SaveChangesAsync();
                     // Commit the transaction if all operations are successful
                     await transaction.CommitAsync();
                     return true;

@@ -30,30 +30,30 @@ namespace Qyrenx.present.Controllers
             _context = context;
         }
 
-		[HttpPut("block/{id}")]
-		public async Task<ActionResult<string>> Block(Guid id)
-		{
-			try
-			{
-				var vendor = await _vendorServices.BlockVendor(id);
-				if (vendor)
-				{
-					return Ok("Blocked Successfully");
-				}
-				return NotFound();
-			}
-			catch (Exception ex)
-			{
-				return BadRequest(ex.Message);
-			}
-		}
+		//[HttpPut("block/{id}")]
+		//public async Task<ActionResult<string>> Block(Guid id)
+		//{
+		//	try
+		//	{
+		//		var vendor = await _vendorServices.BlockVendor(id);
+		//		if (vendor)
+		//		{
+		//			return Ok("Blocked Successfully");
+		//		}
+		//		return NotFound();
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		return BadRequest(ex.Message);
+		//	}
+		//}
 
-		[HttpPut("unblock/{id}")]
-		public async Task<ActionResult<string>> UnBlock(Guid id)
+		[HttpPut("blockunblock/{id}")]
+		public async Task<ActionResult<string>> BlockOrUnblock(Guid id)
 		{
 			try
 			{
-				var vendor = await _vendorServices.UnblockVendor(id);
+				var vendor = await _vendorServices.BlockOrUnblockVendor(id);
 				if (vendor)
 				{
 					return Ok("UnBlocked Successfully");
@@ -126,19 +126,19 @@ namespace Qyrenx.present.Controllers
 			}
 		}
 
-		[HttpGet("shopename")]
-		public async Task<ActionResult<VendorAdminViewDto>> GetVendorsByName(string shopename)
-		{
-			try
-			{
-				var res = await _vendorServices.GetVendorByShopeName(shopename);
-				return Ok(res);
-			}
-			catch (Exception ex)
-			{
-				return NotFound();
-			}
-		}
+		//[HttpGet("shopename")]
+		//public async Task<ActionResult<VendorAdminViewDto>> GetVendorsByName(string shopename)
+		//{
+		//	try
+		//	{
+		//		var res = await _vendorServices.GetVendorByShopeName(shopename);
+		//		return Ok(res);
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		return NotFound();
+		//	}
+		//}
 
 		[HttpPost("register")]
 		public async Task<ActionResult<string>> Register([FromForm] VendorRegisterDto vendorRegister, IFormFile shopelicense)

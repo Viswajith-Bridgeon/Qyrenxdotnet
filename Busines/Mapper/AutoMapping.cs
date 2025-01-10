@@ -5,6 +5,7 @@ using Qyrenx.Business.DTOs.CategoryDto;
 using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.DTOs.GadgetDtos;
 using Qyrenx.Business.DTOs.VendorActiveDto;
+using Qyrenx.Business.DTOs.VendorDtos;
 using Qyrenx.Business.Models.DTOs.Deliverypersons;
 using Qyrenx.Business.Models.DTOs.UserDTO;
 using Qyrenx.Business.Models.DTOs.VendorDtos;
@@ -29,6 +30,17 @@ namespace Qyrenx.Business.Mapper
             CreateMap<GadgetAddDto, Gadget>().ReverseMap();   
             CreateMap<VendorActiveDto,VendorOnline>().ReverseMap();
             CreateMap<VendorRegisterDto,VendorAddress>().ReverseMap();
-        }
+            CreateMap<VendorCategoryAddDto,VendorCategory>().ReverseMap();
+            CreateMap<DeliveryPerson, DeliveryPersonDto>().ReverseMap();
+            CreateMap <GadgetviewDto,Gadget>().ReverseMap();
+            CreateMap<PickupDto, Pickup>().ReverseMap()
+                .ForMember(e => e.AddressId, e => e.MapFrom(e => e.Gadget.AddressId))
+                .ForMember(e => e.UserId, e => e.MapFrom(e => e.Gadget.UserId))
+                 .ForMember(e => e.Image, e => e.MapFrom(e => e.Gadget.Image))
+                 .ForMember(e => e.GadgetName, e => e.MapFrom(e => e.Gadget.GadgetName))
+                  .ForMember(e => e.Description, e => e.MapFrom(e => e.Gadget.Description));
+
+
+    }
     }
 }

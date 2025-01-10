@@ -16,6 +16,11 @@ using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.DTOs.VendorActiveDto;
 using CloudinaryDotNet.Actions;
 using Qyrenx.Business.DTOs;
+using System.Globalization;
+using System.Text.Json.Serialization;
+using Qyrenx.Dataccess.DbAccess.VendorRepo;
+using Qyrenx.Dataccess.DbAccess.CategoryRepo;
+using Qyrenx.Dataccess.DbAccess.AddressRepo;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -27,17 +32,21 @@ namespace Qyrenx.Business.Services.VendorServices
 		private readonly ICloudinaryService _cloudinaryService;
 		private readonly IJwtService _jwtService;
 		private readonly IEmailServices _emailServices;
-        private readonly IDbAccess _dbAccess;
         private readonly IDeliveryService _deliveryService;
-        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDbAccess dbAccess,IDeliveryService deliveryService)  
+        private readonly IVendorRepo _vendorRepo;
+        private readonly ICategory _category;
+        private readonly IAddress _address;
+        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDeliveryService deliveryService,IVendorRepo vendorRepo,ICategory category, IAddress address)
         {
             _context = context;
 			_mapper = mapper;
 			_cloudinaryService= cloudinaryService;
 			_jwtService=jwtService;
-			_emailServices=emailServices;
-            _dbAccess = dbAccess;
+            _emailServices = emailServices;
             _deliveryService = deliveryService;
+            _vendorRepo = vendorRepo;
+            _category = category;
+            _address = address;
         }
        
 
@@ -53,10 +62,10 @@ namespace Qyrenx.Business.Services.VendorServices
                 Mobile = v.Mobile,
                 Email = v.Email,
                 IsBlock = v.IsBlock,
-                City = v.VendorAddress.City,
-                House = v.VendorAddress.House,
-                LandMark = v.VendorAddress.LandMark,
-                PostalCode = v.VendorAddress.PostalCode,
+                //City = v.VendorAddress.City,
+                //House = v.VendorAddress.House,
+                //LandMark = v.VendorAddress.LandMark,
+                //PostalCode = v.VendorAddress.PostalCode,
             });
 			return vendor.ToList();
 		}
@@ -65,7 +74,7 @@ namespace Qyrenx.Business.Services.VendorServices
 		{
 			try
 			{
-				var exist = await _context.Vendors.FirstOrDefaultAsync(e=>e.Id==id);
+				var exist = await _vendorRepo.GetVendorById(id);
 				if (exist == null)
 					return new VendorAdminViewDto { };
 				var vendor = _mapper.Map<VendorAdminViewDto>(exist);
@@ -77,29 +86,29 @@ namespace Qyrenx.Business.Services.VendorServices
 			}
 		}
 
-		public async Task<IEnumerable<VendorAdminViewDto>> GetVendorByShopeName(string name)
-		{
-			var vendors = _context.Vendors.Where(c => c.ShopeName.ToLower().Contains(name.ToLower()));
-			if (!vendors.Any())
-			{
-				return Enumerable.Empty<VendorAdminViewDto>();
-			}
-			var vendor = vendors.Select(v => new VendorAdminViewDto
-			{
-				Id = v.Id,
-				Name = v.Name,
-				ShopeName = v.ShopeName,
-				ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
-				Mobile = v.Mobile,
-				Email = v.Email,
-                IsBlock= v.IsBlock,
-			});
-			return vendor.ToList();
-		}
+		//public async Task<IEnumerable<VendorAdminViewDto>> GetVendorByShopeName(string name)
+		//{
+		//	var vendors = _context.Vendors.Where(c => c.ShopeName.ToLower().Contains(name.ToLower()));
+		//	if (!vendors.Any())
+		//	{
+		//		return Enumerable.Empty<VendorAdminViewDto>();
+		//	}
+		//	var vendor = vendors.Select(v => new VendorAdminViewDto
+		//	{
+		//		Id = v.Id,
+		//		Name = v.Name,
+		//		ShopeName = v.ShopeName,
+		//		ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
+		//		Mobile = v.Mobile,
+		//		Email = v.Email,
+  //              IsBlock= v.IsBlock,
+		//	});
+		//	return vendor.ToList();
+		//}
 
 		public async Task<IEnumerable<VendorAdminViewDto>> GetVendorNotVerified()
 		{
-			var vendors = _context.Vendors.Where(v => v.IsVerified == false);
+			var vendors = await _vendorRepo.GetVendorNotVerified();
 			var vendor = vendors.Select(v => new VendorAdminViewDto
 			{
 				Id = v.Id,
@@ -117,7 +126,7 @@ namespace Qyrenx.Business.Services.VendorServices
 		{
 			try
 			{
-				var exist = await _context.Vendors.SingleOrDefaultAsync(p => p.Email == loginDto.Email);
+				var exist = await _vendorRepo.GetVendorByMail(loginDto.Email);
 				if (exist != null)
 				{
 					if (BCrypt.Net.BCrypt.Verify(loginDto.Password, exist.HashPassword))
@@ -152,30 +161,34 @@ namespace Qyrenx.Business.Services.VendorServices
 			try
 			{
 
-				var exist = await _context.Vendors.FirstOrDefaultAsync(c => c.Email == registerDto.Email);
+                bool emailverify = _emailServices.verifyOtp(registerDto.Email, registerDto.otp);
+                var exist = await _vendorRepo.GetVendorByMail(registerDto.Email);
 				if (exist != null)
 				{
 					return "vendor already exist";
 				}
-				bool emailverify = _emailServices.verifyOtp(registerDto.Email, registerDto.otp);
 				if (emailverify)
 				{
 					var license = await _cloudinaryService.UploadDocumentAsync(shopelicense);
-					var vendor = _mapper.Map<Vendor>(registerDto);
-					vendor.HashPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
-					vendor.ShopeLicense = license;
-					_context.Vendors.Add(vendor);
-                    await _context.SaveChangesAsync();
-                    var vendoraddress=_mapper.Map<VendorAddress>(registerDto);
-                    vendoraddress.Role = "Vendor";
-                    var ven_id = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == registerDto.Email);
-                    vendoraddress.VendorId = ven_id.Id;
-                    _context.VendorAddresses.Add(vendoraddress);
-					await _context.SaveChangesAsync();
-                    var data =await _dbAccess.GetAllVendor();
-                    var data1=data.FirstOrDefault(p=>p.Email == registerDto.Email);
-                    await VendorActivity(data1.Id);
-					return "registered successfully";
+                    var new_vendor = _mapper.Map<Vendor>(registerDto);
+                    new_vendor.HashPassword = registerDto.Password;
+                    new_vendor.ShopeLicense = license;
+                    var vendorreg = await _vendorRepo.VendorRegistration(new_vendor);
+                    if (vendorreg != null)
+                    {
+                        var v_id = await _vendorRepo.GetVendorByMail(registerDto.Email);
+                        var vendoraddress = _mapper.Map<VendorAddress>(registerDto);
+                        vendoraddress.VendorId = v_id.Id;
+                        var result = await _vendorRepo.AddVendorAddress(vendoraddress);
+                        if (result == true)
+                        {
+                            var data1 = await _vendorRepo.GetVendorByMail(registerDto.Email);
+                            await VendorActivity(data1.Id);
+                            return "registered successfully";
+                        }
+                        return "something went wrong";
+                    }
+                    
 				}
 				return "wrong otp";
 			}
@@ -184,56 +197,42 @@ namespace Qyrenx.Business.Services.VendorServices
 				throw new Exception($"Registration Failed ,MSG {ex}");
 			}
 		}
-		public async Task<bool> BlockVendor(Guid id)
+		public async Task<bool> BlockOrUnblockVendor(Guid id)
 		{
 			try
 			{
-				var vendor = await _context.Vendors.FirstOrDefaultAsync(e=>e.Id==id);
-				if (vendor == null)
-				{
-					return false;
-				}
-				vendor.IsBlock = true;
-				await _context.SaveChangesAsync();
-				return true;
+				var vendor = await _vendorRepo.BlockOrUnblockVendor(id);
+				return vendor;
 			}
 			catch (Exception ex)
 			{
 				throw new Exception("There was an ERORR in block");
 			}
 		}
-		public async Task<bool> UnblockVendor(Guid id)
-		{
-			try
-			{
-				var vendor = await _context.Vendors.FindAsync(id);
-				if (vendor == null)
-				{
-					return false;
-				}
-				vendor.IsBlock = false;
-				await _context.SaveChangesAsync();
-				return true;
-			}
-			catch (Exception ex)
-			{
-				throw new Exception("There was an ERORR in unblock");
-			}
-		}
+		//public async Task<bool> UnblockVendor(Guid id)
+		//{
+		//	try
+		//	{
+		//		var vendor = await _context.Vendors.FindAsync(id);
+		//		if (vendor == null)
+		//		{
+		//			return false;
+		//		}
+		//		vendor.IsBlock = false;
+		//		await _context.SaveChangesAsync();
+		//		return true;
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		throw new Exception("There was an ERORR in unblock");
+		//	}
+		//}
 
 		public async Task<bool> VerificationVendor(Guid id)
 		{
 			try
 			{
-				var vendor = await _context.Vendors.FindAsync(id);
-				if (vendor == null)
-				{
-					return false;
-				}
-				vendor.IsVerified= true;
-				await _context.SaveChangesAsync();
-                await VendorActivity(id)    ;
-				await _emailServices.SendVerifiedmsg(vendor.Role,vendor.Name,vendor.Email);
+				var vendor = await _vendorRepo.VerificationVendor(id);
 				return true;
 			}
 			catch (Exception ex)
@@ -315,13 +314,13 @@ namespace Qyrenx.Business.Services.VendorServices
         {
             try
             {
-                var exist = await _context.Vendors.FirstOrDefaultAsync(v => v.Id == id);
+                var exist = await _vendorRepo.GetVendorById(id);
                 if (exist == null)
                 {
                     return false;
                 }
 
-                var catexist = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == catid);
+                var catexist = await _category.GetCategoryById(catid);
                 if (catexist == null)
                 {
                     return false;
@@ -356,19 +355,20 @@ namespace Qyrenx.Business.Services.VendorServices
         {
             try
             {
-                var data = await _dbAccess.GetAllVendorOnline();
+                var data = await _vendorRepo.GetAllVendorOnline();
                 var vendor = data.FirstOrDefault(p => p.VendorId == id);
-                var vendorAddress= await _dbAccess.GetAllVendorAddresses();
+                var vendorAddress= await _vendorRepo.GetAllVendorAddresses();
                 var adrs=vendorAddress.FirstOrDefault(p => p.VendorId == id);
 
                 if (vendor == null)
                 {
+                    var latlong = GetCoordinatesFromAddress(adrs.City, adrs.PostalCode);
                     var vonline= new VendorOnline
                     {
                         IsActive=true,
                         VendorId=id,
-                        Lat=GetCoordinatesFromAddress(adrs).Result.lat, 
-                        Long=GetCoordinatesFromAddress(adrs).Result.lon
+                        Lat=latlong.Result.lat,
+                        Long=latlong.Result.lon
                     };
                     await _context.VendorOnline.AddAsync(vonline);
                     await _context.SaveChangesAsync();
@@ -387,14 +387,18 @@ namespace Qyrenx.Business.Services.VendorServices
 
 
 
-        private async Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(VendorAddress address)
+        private async Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(string city, string postalCode)
         {
             try
             {
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("YourAppName/1.0");
 
-                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(GetFullAddress(address))}&format=json";
+                var address = GetFullAddress(city, postalCode);
+                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(address)}&format=json";
+
+                Console.WriteLine($"Requesting: {url}");
+
                 var response = await httpClient.GetAsync(url);
 
                 if (!response.IsSuccessStatusCode)
@@ -407,10 +411,12 @@ namespace Qyrenx.Business.Services.VendorServices
                 var data = JsonSerializer.Deserialize<List<GeoResponse>>(json);
 
                 if (data == null || !data.Any())
-                    throw new Exception($"No coordinates found for the address.{GetFullAddress(address)}");
+                {
+                    throw new Exception($"No coordinates found for the address: {address}");
+                }
 
-                decimal lat = Convert.ToDecimal(data[0].Lat);
-                decimal lon = Convert.ToDecimal(data[0].Lon);
+                decimal lat = Convert.ToDecimal(data[0].Lat, CultureInfo.InvariantCulture);
+                decimal lon = Convert.ToDecimal(data[0].Lon, CultureInfo.InvariantCulture);
 
                 return (lat, lon);
             }
@@ -420,22 +426,18 @@ namespace Qyrenx.Business.Services.VendorServices
             }
         }
 
-        private string GetFullAddress(VendorAddress address)
+        private string GetFullAddress(string city, string postalCode)
         {
-            return $"{address.City},{address.PostalCode}";
+            return $"{city}, {postalCode}";
         }
 
-        public class GeoResponse
-        {
-            public string Lat { get; set; }
-            public string Lon { get; set; }
-        }
+       
         public async Task<Guid> GetNearestVendorPerson(Guid id)
         {
-            var user = await _dbAccess.GetAllAddressAddresses();
+            var user = await _address.GetAllAddress();
             var userAddress = user.FirstOrDefault(p => p.Id == id);
             var (UserLat, UserLon) = await _deliveryService.GetCoordinatesFromAddress(userAddress);
-            var Persons = await _dbAccess.GetAllVendorOnline();
+            var Persons = await _vendorRepo.GetAllVendorOnline();
             var ActivepPersons=Persons.Where(p=>p.IsActive==true).ToList();
             if (ActivepPersons == null)
             {

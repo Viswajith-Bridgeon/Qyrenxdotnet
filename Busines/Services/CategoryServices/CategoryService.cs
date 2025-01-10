@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Dataccess.DbAccess.CategoryRepo;
 
 namespace Qyrenx.Business.Services.CategoryServices
 {
@@ -19,20 +20,20 @@ namespace Qyrenx.Business.Services.CategoryServices
         private readonly QyrenxContext _context;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
-        private readonly IDbAccess _dbAccess;
-        public CategoryService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper, IDbAccess dbAccess)
+        private readonly ICategory _category; 
+        public CategoryService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper, ICategory category)
         {
             _context = context;
             _cloudinaryService = cloudinaryService;
             _mapper = mapper;
-            _dbAccess = dbAccess;
+            _category = category;
         }
 
         public async Task<IEnumerable<Category>> GetCategory()
         {
             try
             {
-                var res =await _dbAccess.GetAllCategories();  
+                var res=await _category.GetCategory();
                 return res;
             }
             catch (Exception ex)
@@ -44,23 +45,11 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var data= await _dbAccess.GetAllCategories();
-                var exist=data.Where(c=>c.CategoryName.ToLower()==name.ToLower());
-                if (!exist.Any())
-                {
-                    var img = await _cloudinaryService.UploadDocumentAsync(image);
-                    var category = new CategoryAddDto
-                    {
-                        CategoryName = name,
-                        Image = img,
-                        CategoryDescription=dis,
-                    };
-                    var cat = _mapper.Map<Category>(category);
-                    await _context.Categories.AddAsync(cat);
-                    await _context.SaveChangesAsync();
-
+              
+                var img = await _cloudinaryService.UploadDocumentAsync(image);
+                var res = await _category.AddCategory(name, dis, img);
+                if(res)
                     return true;
-                }
                 return false;
             }
             catch (Exception ex)
@@ -73,12 +62,9 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var data = await _dbAccess.GetAllCategories();
-                var exist=  data.FirstOrDefault(c => c.CategoryId == id);
-                if(exist!=null)
+               var res= await _category.DeleteCategory(id);
+                if(res)
                 {
-                    _context.Categories.Remove(exist);
-                    _context.SaveChanges();
                     return true;
                 }
                 return false;
@@ -95,19 +81,12 @@ namespace Qyrenx.Business.Services.CategoryServices
         {
             try
             {
-                var data = await _dbAccess.GetAllCategories();
-                var exist = data.FirstOrDefault(c => c.CategoryId == id);
-                if (exist != null)
+                var img = await _cloudinaryService.UploadDocumentAsync(image);
+                var res =await _category.UpdateCategory(id, name,img);
+                if (res)
                 {
-                    if (image != null && name != null)
-                    {
-                        var img = await _cloudinaryService.UploadDocumentAsync(image);
-                        exist.Image = img;
-                        exist.CategoryName = name;
-                        _context.Categories.Update(exist);
-                        _context.SaveChanges();
+                   
                         return true;
-                    }
                 }
                 return false;
             }
