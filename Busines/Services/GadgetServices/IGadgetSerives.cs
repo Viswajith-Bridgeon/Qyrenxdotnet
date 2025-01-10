@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Qyrenx.Business.DTOs.GadgetDtos;
+using Qyrenx.Dataccess.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,5 +13,6 @@ namespace Qyrenx.Business.Services.GadgetServices
     {
 
         Task<bool> Addgadget(Guid id,GadgetAddDto dto,IFormFile img);
+        Task<List<GadgetviewDto>> GetAll();
     }
 }

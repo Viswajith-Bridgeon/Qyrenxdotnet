@@ -53,6 +53,18 @@ namespace Qyrenx.Dataccess.DbAccess.GadgetRepo
                 throw new Exception(ex.InnerException?.Message ?? ex.Message);
             }
         }
+       public async Task<Gadget> GetordergadgetsById(Guid id)
+        {
+            try
+            {
+                var data=await _context.Gadgets.FirstOrDefaultAsync(x => x.Id == id);
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
 
     }
 }

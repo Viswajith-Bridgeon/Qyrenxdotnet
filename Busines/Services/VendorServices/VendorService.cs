@@ -20,6 +20,7 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using Qyrenx.Dataccess.DbAccess.VendorRepo;
 using Qyrenx.Dataccess.DbAccess.CategoryRepo;
+using Qyrenx.Dataccess.DbAccess.AddressRepo;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -31,21 +32,21 @@ namespace Qyrenx.Business.Services.VendorServices
 		private readonly ICloudinaryService _cloudinaryService;
 		private readonly IJwtService _jwtService;
 		private readonly IEmailServices _emailServices;
-        private readonly IDbAccess _dbAccess;
         private readonly IDeliveryService _deliveryService;
         private readonly IVendorRepo _vendorRepo;
         private readonly ICategory _category;
-        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDbAccess dbAccess,IDeliveryService deliveryService,IVendorRepo vendorRepo,ICategory category)  
+        private readonly IAddress _address;
+        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDeliveryService deliveryService,IVendorRepo vendorRepo,ICategory category, IAddress address)
         {
             _context = context;
 			_mapper = mapper;
 			_cloudinaryService= cloudinaryService;
 			_jwtService=jwtService;
-			_emailServices=emailServices;
-            _dbAccess = dbAccess;
+            _emailServices = emailServices;
             _deliveryService = deliveryService;
             _vendorRepo = vendorRepo;
             _category = category;
+            _address = address;
         }
        
 
@@ -61,10 +62,10 @@ namespace Qyrenx.Business.Services.VendorServices
                 Mobile = v.Mobile,
                 Email = v.Email,
                 IsBlock = v.IsBlock,
-                City = v.VendorAddress.City,
-                House = v.VendorAddress.House,
-                LandMark = v.VendorAddress.LandMark,
-                PostalCode = v.VendorAddress.PostalCode,
+                //City = v.VendorAddress.City,
+                //House = v.VendorAddress.House,
+                //LandMark = v.VendorAddress.LandMark,
+                //PostalCode = v.VendorAddress.PostalCode,
             });
 			return vendor.ToList();
 		}
@@ -169,11 +170,16 @@ namespace Qyrenx.Business.Services.VendorServices
 				if (emailverify)
 				{
 					var license = await _cloudinaryService.UploadDocumentAsync(shopelicense);
-                    var vendorreg = await _vendorRepo.VendorRegistration(exist);
+                    var new_vendor = _mapper.Map<Vendor>(registerDto);
+                    new_vendor.HashPassword = registerDto.Password;
+                    new_vendor.ShopeLicense = license;
+                    var vendorreg = await _vendorRepo.VendorRegistration(new_vendor);
                     if (vendorreg != null)
                     {
+                        var v_id = await _vendorRepo.GetVendorByMail(registerDto.Email);
                         var vendoraddress = _mapper.Map<VendorAddress>(registerDto);
-                        var result = await _vendorRepo.AddVendorAddress(vendoraddress, exist);
+                        vendoraddress.VendorId = v_id.Id;
+                        var result = await _vendorRepo.AddVendorAddress(vendoraddress);
                         if (result == true)
                         {
                             var data1 = await _vendorRepo.GetVendorByMail(registerDto.Email);
@@ -349,9 +355,9 @@ namespace Qyrenx.Business.Services.VendorServices
         {
             try
             {
-                var data = await _dbAccess.GetAllVendorOnline();
+                var data = await _vendorRepo.GetAllVendorOnline();
                 var vendor = data.FirstOrDefault(p => p.VendorId == id);
-                var vendorAddress= await _dbAccess.GetAllVendorAddresses();
+                var vendorAddress= await _vendorRepo.GetAllVendorAddresses();
                 var adrs=vendorAddress.FirstOrDefault(p => p.VendorId == id);
 
                 if (vendor == null)
@@ -425,20 +431,13 @@ namespace Qyrenx.Business.Services.VendorServices
             return $"{city}, {postalCode}";
         }
 
-        public class GeoResponse
-        {
-            [JsonPropertyName("lat")]
-            public string Lat { get; set; }
-
-            [JsonPropertyName("lon")]
-            public string Lon { get; set; }
-        }
+       
         public async Task<Guid> GetNearestVendorPerson(Guid id)
         {
-            var user = await _dbAccess.GetAllAddressAddresses();
+            var user = await _address.GetAllAddress();
             var userAddress = user.FirstOrDefault(p => p.Id == id);
             var (UserLat, UserLon) = await _deliveryService.GetCoordinatesFromAddress(userAddress);
-            var Persons = await _dbAccess.GetAllVendorOnline();
+            var Persons = await _vendorRepo.GetAllVendorOnline();
             var ActivepPersons=Persons.Where(p=>p.IsActive==true).ToList();
             if (ActivepPersons == null)
             {

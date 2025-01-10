@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Qyrenx.Business.DTOs.GadgetDtos;
 using Qyrenx.Business.Services.GadgetServices;
 using Qyrenx.Dataccess.ApiResponses;
+using Qyrenx.Dataccess.Models.Entities;
 
 namespace Qyrenx.Controllers
 {
@@ -37,6 +38,21 @@ namespace Qyrenx.Controllers
                 return Ok(res);
             }
             catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+        [HttpGet("allgadget")]
+        public async Task <IActionResult> GetGadgets()
+        {
+            try
+            {
+                var gdget =await _gadgetSerives.GetAll();
+                var r = new ApiResponse<List<GadgetviewDto>>(402, "error occured", gdget);
+                return Ok(r);
+            }
+            catch(Exception ex)
             {
                 var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
                 return StatusCode(500, r);

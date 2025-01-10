@@ -63,7 +63,8 @@ namespace Qyrenx.Dataccess.DbAccess.CategoryRepo
                 var exist = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
                 if (exist != null)
                 {
-                    _context.Categories.Remove(exist);
+                    exist.IsDelete = true;
+                    exist.UpdatedOn = DateTime.UtcNow;
                     _context.SaveChanges();
                     return true;
                 }

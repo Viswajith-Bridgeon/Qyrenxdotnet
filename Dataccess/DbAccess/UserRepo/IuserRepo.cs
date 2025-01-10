@@ -17,6 +17,6 @@ namespace Qyrenx.Dataccess.DbAccess.UserRepo
         Task<string>BlockOrUnblock(Guid id);
 
         Task <User>GetUserByEmail(string email);
-
+                                                                                                                                                    
     }
 }

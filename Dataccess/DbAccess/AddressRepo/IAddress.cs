@@ -10,7 +10,8 @@ namespace Qyrenx.Dataccess.DbAccess.AddressRepo
     public interface IAddress
     {
          Task<ICollection<Address>> GetAllAddress();
-        Task<Address>GetAddressById(Guid id);
+        Task<List<Address>> GetAddressById(Guid id);
+        Task<Address> GetAddressByAddId(Guid Id);
         Task<bool> AddAddress(Guid id,Address add);
         Task<bool> UpdateAddress(Guid Aid,Address address);
         Task<bool> DeleteAddressById(Guid usid,Guid addid);

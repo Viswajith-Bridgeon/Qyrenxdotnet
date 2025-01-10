@@ -191,7 +191,13 @@ namespace Qyrenx.Business.Services.UserSecurityPay
 
                     await _context.Pickups.AddAsync(pick);
                     await _context.SaveChangesAsync();
-
+                    var status = new Status
+                    {
+                        PickupId = pick.Id,
+                        Statuss = "payment successfull waiting for Deliveryperson"
+                    };
+                    await _context.Status.AddAsync(status);
+                    await _context.SaveChangesAsync();
                     // Commit the transaction if all operations are successful
                     await transaction.CommitAsync();
                     return true;

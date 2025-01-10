@@ -20,8 +20,9 @@ namespace Qyrenx.Dataccess.DbAccess.VendorRepo
         Task<bool> BlockOrUnblockVendor(Guid id);
         Task<bool> VerificationVendor(Guid id);
         Task<bool> CategoryAddvendor(Guid id, Guid catid);
-        Task<bool> AddVendorAddress(VendorAddress address, Vendor exist);
-    
+        Task<bool> AddVendorAddress(VendorAddress address);
+        Task<List<VendorOnline>> GetAllVendorOnline();
+        Task<List<VendorAddress>> GetAllVendorAddresses();
 
     }
 }
