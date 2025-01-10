@@ -12,6 +12,9 @@ using Qyrenx.Dataccess.DbAccess;
 using Qyrenx.Business.DTOs;
 using Qyrenx.Business.Services.JwtServices;
 using Qyrenx.Dataccess.DbAccess.UserRepo;
+using Qyrenx.Business.DTOs.VendorDtos;
+using Qyrenx.Dataccess.DbAccess.VendorCostRepo;
+using Qyrenx.Dataccess.DbAccess.VendorRepo;
 
 
 namespace Qyrenx.Business.Services.UserServices
@@ -23,13 +26,17 @@ namespace Qyrenx.Business.Services.UserServices
         private readonly IEmailServices _emailServices;
         private readonly IJwtService _jwtService;
         private readonly IuserRepo _userRepo;
-        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices, IJwtService jwtService, IuserRepo userRepo)
+        private readonly IVendorCostRepo _vendorCostRepo;
+        private readonly IVendorRepo _vendorRepo;
+        public UserServices(QyrenxContext mainDbContext, IMapper mapper, IEmailServices emailServices, IJwtService jwtService, IuserRepo userRepo, IVendorCostRepo vendorCostRepo, IVendorRepo vendorRepo)
         {
             _mainDbContext = mainDbContext;
             _mapper = mapper;
             _emailServices = emailServices;
             _jwtService = jwtService;
             _userRepo = userRepo;
+            _vendorCostRepo = vendorCostRepo;
+            _vendorRepo = vendorRepo;
         }
 
         public async Task<string> registration(UserDto user)
@@ -271,6 +278,36 @@ namespace Qyrenx.Business.Services.UserServices
             }
         }
 
+        public async Task<VendorCostView> GetSeviceDetialsByPickup(Guid userid,Guid pickupid)
+        {
+            try
+            {
+                var user= await _userRepo.GetUserById(userid);
+                if (user != null)
+                {
+                   var ved_cost=await _vendorCostRepo.GetVendorCostByPickup(pickupid);
+                    var vendor=await _vendorRepo.GetVendorById(ved_cost.VendorId);
+                    var vendor_cost_view = new VendorCostView
+                    {
+                        VendorName = vendor.Name,
+                        SaleCost = ved_cost.SaleCost,
+                        ProblemDescription = ved_cost.ProblemDescription,
+                        IsServiceable = ved_cost.IsServiceable,
+                        PickupId = ved_cost.PickupId,
+                        VendorPhone = vendor.Mobile,
+                        ServiceCost = ved_cost.ServiceCost
+
+                    };
+                    return vendor_cost_view;
+                }
+                return new VendorCostView();
+                
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
 
 
     

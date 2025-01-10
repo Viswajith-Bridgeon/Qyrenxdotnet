@@ -478,5 +478,28 @@ namespace Qyrenx.Business.Services.VendorServices
 
         private double ToRadians(double angle) => Math.PI * angle / 180.0;
 
+
+        public async Task<bool> ResetPassword(string Email, string password)
+        {
+            try
+            {
+                var user = await _vendorRepo.GetVendorByMail(Email);
+                if (user == null)
+                {
+                    return false;
+                }
+                var haspassword = BCrypt.Net.BCrypt.HashPassword(password);
+                user.HashPassword = haspassword;
+                user.UpdatedOn = DateTime.UtcNow;
+                user.UpdatedBy = user.Name;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
     }
 }

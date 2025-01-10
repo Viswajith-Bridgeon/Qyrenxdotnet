@@ -27,6 +27,8 @@ using Qyrenx.Dataccess.DbAccess.UserSecurityPay;
 using Qyrenx.Dataccess.DbAccess.GadgetRepo;
 using Qyrenx.Business.Services.PickupServices;
 using Qyrenx.Dataccess.DbAccess.Pickuprep;
+using Qyrenx.Dataccess.DbAccess.StatusRepo;
+using Qyrenx.Dataccess.DbAccess.VendorCostRepo;
 
 namespace Qyrenx
 {
@@ -60,6 +62,8 @@ namespace Qyrenx
             builder.Services.AddScoped<IuserSecurityRepo, UserSecurityRepo>(); 
             builder .Services.AddScoped<IPickupServices, PickupServices>();
             builder.Services.AddScoped<IpickupsRepo, PickupsRepo>();
+            builder .Services.AddScoped<IstatusRepo,StatusRepo>(); 
+            builder .Services.AddScoped<IVendorCostRepo,VendorCostServicRepo>();
 
 
             builder.Services.AddDbContext<QyrenxContext>(options =>
