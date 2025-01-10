@@ -1,42 +1,41 @@
-﻿//using Qyrenx.Services.JwtServices;
+﻿//using Microsoft.IdentityModel.Tokens;
+//using System.IdentityModel.Tokens.Jwt;
 
-//namespace Qyrenx.CustomMidlleware
+//public class JwtMiddleware
 //{
-//    public class JwtMiddleware
+//    private readonly RequestDelegate _next;
+
+//    public JwtMiddleware(RequestDelegate next)
 //    {
-//        private readonly IJwtService _jwtService;
-//        private readonly RequestDelegate _next;
-//        public JwtMiddleware(IJwtService jwtService, RequestDelegate next)
-//        {  
-//         _next = next;
-//         _jwtService = jwtService;  
-//        }
+//        _next = next;
+//    }
 
-//        public async Task InvokeAsync(HttpContext context)
+//    public async Task InvokeAsync(HttpContext context)
+//    {
+//        var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+//        if (token != null)
 //        {
-//            // Check if the request is for generating a token
-//            if (context.Request.Path.StartsWithSegments("/generate-token") && context.Request.Method == "POST")
+//            try
 //            {
-//                var Id = context.Request.Headers["Id"].ToString();
-//                var Email = context.Request.Headers["Email"].ToString();
-//                var role = context.Request.Headers["Role"].ToString(); // Role could be 'user', 'vendor', 'deliveryperson', 'admin'
+//                var tokenHandler = new JwtSecurityTokenHandler();
+//                var jwtToken = tokenHandler.ReadJwtToken(token);
 
-//                if (string.IsNullOrEmpty(Id) || string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(role))
+//                var expiration = jwtToken.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+
+//                if (expiration != null && DateTime.UtcNow > DateTimeOffset.FromUnixTimeSeconds(long.Parse(expiration)).UtcDateTime)
 //                {
-//                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-//                    await context.Response.WriteAsync("Missing required parameters.");
-//                    return;
+//                    throw new SecurityTokenExpiredException("Token has expired.");
 //                }
-
-//                var token = _jwtService.GenerateJwt(Id, Email, role);
-
-//                context.Response.StatusCode = StatusCodes.Status200OK;
-//                await context.Response.WriteAsync(token);
+//            }
+//            catch (Exception ex)
+//            {
+//                context.Response.StatusCode = 401;
+//                await context.Response.WriteAsync("Unauthorized: " + ex.Message);
 //                return;
 //            }
-
-//            await _next(context);
 //        }
 
-//        }
+//        await _next(context);
+//    }
 //}

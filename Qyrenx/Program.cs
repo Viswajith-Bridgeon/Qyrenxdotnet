@@ -23,10 +23,17 @@ namespace Qyrenx
 {
     public class Program
     {
+        private readonly IHostEnvironment env;
+        public Program(IHostEnvironment env)
+        {
+            this.env = env;
+            
+        }
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
+           
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -86,6 +93,7 @@ namespace Qyrenx
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
             })
             .AddJwtBearer(options =>
             {
@@ -94,6 +102,7 @@ namespace Qyrenx
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                     ValidAudience = builder.Configuration["JwtSettings:Audience"],
@@ -107,7 +116,7 @@ namespace Qyrenx
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(); 
             }
             app.UseStaticFiles();
             app.UseHttpsRedirection();
@@ -115,7 +124,6 @@ namespace Qyrenx
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseMiddleware<IdAcessMiddleware>();
-
 
             app.MapControllers();
 
