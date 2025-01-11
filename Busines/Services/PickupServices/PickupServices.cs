@@ -1,13 +1,17 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.DTOs;
 using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.DbAccess.AddressRepo;
+using Qyrenx.Dataccess.DbAccess.DeliveryRepo;
 using Qyrenx.Dataccess.DbAccess.GadgetRepo;
 using Qyrenx.Dataccess.DbAccess.Pickuprep;
 using Qyrenx.Dataccess.DbAccess.UserRepo;
+using Qyrenx.Dataccess.DbAccess.VendorRepo;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -26,7 +30,10 @@ namespace Qyrenx.Business.Services.PickupServices
         private readonly IuserRepo _userRepo;
         private readonly IgadgetRepo _gadgetRepo;
         private readonly IAddress _address;
-        public PickupServices(IpickupsRepo repo,IMapper mapper, IEmailServices emailServices, IuserRepo userRepo, IgadgetRepo gadgetRepo,IAddress address)   
+        private readonly IdeliveryRepo _deliveryRepo;
+        private readonly QyrenxContext _context;
+        private readonly IVendorRepo _vendorRepo;
+        public PickupServices(IpickupsRepo repo,IMapper mapper, IEmailServices emailServices, IuserRepo userRepo, IgadgetRepo gadgetRepo,IAddress address,IdeliveryRepo deliveryRepo,QyrenxContext qyrenxContext,IVendorRepo vendorRepo)
         {
             _pickupsRepo = repo;    
             _mapper = mapper;
@@ -34,6 +41,10 @@ namespace Qyrenx.Business.Services.PickupServices
             _userRepo = userRepo;
             _gadgetRepo = gadgetRepo;
             _address = address;
+            _deliveryRepo = deliveryRepo;
+            _context = qyrenxContext;
+            _vendorRepo = vendorRepo;
+
         }
 
         public async Task<List<PickupDto>> GetPickupsDeliveryBoys(Guid id)
@@ -62,8 +73,10 @@ namespace Qyrenx.Business.Services.PickupServices
                     if (verified)
                     {
                         var gad = await _gadgetRepo.GetordergadgetsById(data.GadgetId);
-                        var mail = await _userRepo.GetUserById(gad.UserId);
-                        var mail_send = _emailServices.sendOtp(mail.Email);
+                        var user = await _userRepo.GetUserById(gad.UserId);
+                        var delivery = await _deliveryRepo.GetDeliveryPeresonById(userid);
+
+                        var mail_send = _emailServices.SendOtpForDeliveryBoyVerification(user.Email);
                         if (mail_send != null)
                         {
                             return true;
@@ -158,6 +171,132 @@ namespace Qyrenx.Business.Services.PickupServices
             return $"{address.City}, {address.PostalCode}";
         }
 
+
+
+
+
+
+        public async Task<bool> pickupVerificationofUser(Guid pid, string otp)
+        {
+            try
+            {
+                var pick=await _pickupsRepo.GetPickupById(pid);
+                if(pick==null)
+                {
+                    return false;
+                }
+                var gad=await _gadgetRepo.GetordergadgetsById(pick.GadgetId);
+                var user=await _userRepo.GetUserById(gad.UserId);
+                bool verify =await _emailServices.UserToDeliverPersonVerifyOtp(user.Email, otp);
+                if (verify)
+                {
+                    var status = new Status
+                    {
+                        PickupId = pick.Id,
+                        Statuss = "DeliveryPerson Recevied Successfully"
+                    };
+                    await _context.Status.AddAsync(status);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in GetCoordinatesFromAddress: {ex.Message}", ex);
+            }
+        }
+
+
+
+
+
+        public async Task<List<PickupVendorDto>> GetPickupsVendor(Guid id)
+        {
+            try
+            {
+                var data = await _pickupsRepo.GetAllPickup();
+                var pick = data.Where(p => p.VendorId == id).ToList();
+
+                return _mapper.Map<List<PickupVendorDto>>(pick);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+
+
+        public async Task<bool> VerifyPickupByDeliveryboyToVendor(Guid pid, Guid userid)
+        {
+            try
+            {
+                var data = await _pickupsRepo.GetPickupById(pid);
+                bool verified = false;
+                if (data.DeliveryPersonId == userid)
+                {
+                    verified = true;
+                    if (verified)
+                    {
+                        var gad = await _gadgetRepo.GetordergadgetsById(data.GadgetId);
+                        var vendor = await _vendorRepo.GetVendorById(data.VendorId);
+
+                        var mail_send = _emailServices.SendOtpForVendorVerification(vendor.Email);
+                        if (mail_send != null)
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    return verified;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+
+
+
+
+        public async Task<bool> pickupVerificationofVendor(Guid pid, string otp)
+        {
+            try
+            {
+                var pick = await _pickupsRepo.GetPickupById(pid);
+                if (pick == null)
+                {
+                    return false;
+                }
+                var vendor=await _vendorRepo.GetVendorById(pick.VendorId);
+                bool verify = await _emailServices.UserToDeliverPersonVerifyOtp(vendor.Email, otp);
+                if (verify)
+                {
+                    var status1 = new Status
+                    {
+                        PickupId = pick.Id,
+                        Statuss = "Vendor Recevied Successfully"
+                    };
+                    var status2 = new Status
+                    {
+                        PickupId = pick.Id,
+                        Statuss = "Start Checking"
+                    };
+                    await _context.Status.AddAsync(status1);
+                    await _context.Status.AddAsync(status2);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in GetCoordinatesFromAddress: {ex.Message}", ex);
+            }
+        }
 
 
     }

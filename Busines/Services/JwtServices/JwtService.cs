@@ -17,14 +17,17 @@ namespace Qyrenx.Business.Services.JwtServices
         private readonly IConfiguration _configuration;
         private readonly QyrenxContext _context;
 
-
         public JwtService(IConfiguration configuration,QyrenxContext context)
         {
             _configuration = configuration;
             _context = context;
         }
+
+
+
         public string GenerateJwt(Guid Id, string Email, string role)
         {
+
             var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
@@ -38,7 +41,7 @@ namespace Qyrenx.Business.Services.JwtServices
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddSeconds(60),
+                expires: DateTime.UtcNow.AddMinutes(10),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

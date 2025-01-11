@@ -27,6 +27,7 @@ using Qyrenx.Dataccess.DbAccess.UserSecurityPay;
 using Qyrenx.Dataccess.DbAccess.GadgetRepo;
 using Qyrenx.Business.Services.PickupServices;
 using Qyrenx.Dataccess.DbAccess.Pickuprep;
+using Qyrenx.Business.Services.StatusServices;
 
 namespace Qyrenx
 {
@@ -42,8 +43,16 @@ namespace Qyrenx
         {
             var builder = WebApplication.CreateBuilder(args);
 
-           
+
             // Add services to the container.
+            DotNetEnv.Env.Load("./CustomMidlleware/.env");
+
+
+            var connection = Environment.GetEnvironmentVariable("DATABASE_CONNECTION");
+            var jwtissuer=Environment.GetEnvironmentVariable("JWT_ISSUER");
+            var jwtaudience=Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+            var key=Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+
 
             builder.Services.AddControllers();
             builder.Services.AddAutoMapper(typeof(AutoMapping));
@@ -67,11 +76,12 @@ namespace Qyrenx
             builder.Services.AddScoped<IuserSecurityRepo, UserSecurityRepo>(); 
             builder .Services.AddScoped<IPickupServices, PickupServices>();
             builder.Services.AddScoped<IpickupsRepo, PickupsRepo>();
+            builder .Services.AddScoped<IStatusServices, StatusServices>();
 
 
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
-                        builder.Configuration.GetConnectionString("DefaultConnection"),
+                        connection,
                         new MySqlServerVersion(new Version(8, 0, 32)),
                         mysqlOptions => mysqlOptions.EnableRetryOnFailure()));            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -123,9 +133,9 @@ namespace Qyrenx
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-                    ValidAudience = builder.Configuration["JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+                    ValidIssuer = jwtissuer,
+                    ValidAudience = jwtaudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
                 };
             });
 

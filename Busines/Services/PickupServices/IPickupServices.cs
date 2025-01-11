@@ -16,6 +16,14 @@ namespace Qyrenx.Business.Services.PickupServices
         Task<bool> VerifyPickup(Guid id, Guid userid);
         Task<LatLong> LatLongOfUser(Guid id);
 
+        Task<bool>  pickupVerificationofUser(Guid id,string otp);
+
+        Task<List<PickupVendorDto>> GetPickupsVendor(Guid id);
+
+
+        Task<bool> VerifyPickupByDeliveryboyToVendor(Guid id, Guid userid);
+
+        Task<bool> pickupVerificationofVendor(Guid pid, string otp);
 
 
     }

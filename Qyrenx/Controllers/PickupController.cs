@@ -29,7 +29,7 @@ namespace Qyrenx.Controllers
                 var userIdResult = GetUserIdFromClaims();
                 var userId = userIdResult.Value;
                 var res = await _pickupServices.GetPickupsDeliveryBoys(userId);
-               return Ok(res);
+                return Ok(res);
             }
             catch (Exception ex)
             {
@@ -39,16 +39,16 @@ namespace Qyrenx.Controllers
         }
         [Authorize(Roles = "DeliveryPerson")]
         [HttpPost("verificationdelivery&user")]
-        public async Task<IActionResult>VerifyPickups(Guid PiickId)
+        public async Task<IActionResult> VerifyPickups(Guid PiickId)
         {
             try
             {
                 var userIdResult = GetUserIdFromClaims();
                 var userId = userIdResult.Value;
-                var verify = await _pickupServices.VerifyPickup(PiickId,userId);
+                var verify = await _pickupServices.VerifyPickup(PiickId, userId);
                 if (verify)
                 {
-                    var resp=new ApiResponse<bool>(200, "verified", verify);
+                    var resp = new ApiResponse<bool>(200, "verified", verify);
                     return Ok(resp);
                 }
                 return BadRequest();
@@ -75,6 +75,64 @@ namespace Qyrenx.Controllers
         }
 
 
+        [Authorize(Roles = "DeliveryPerson")]
+        [HttpPost("DeliveryPersonVerficationOtp")]
+        public async Task<IActionResult> DeliveryPersonOtpVerify(Guid PiickId, string otp)
+        {
+            try
+            {
+                var data = await _pickupServices.pickupVerificationofUser(PiickId, otp);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+        [Authorize(Roles = "Vendor")]
+        [HttpGet("ViewPickupOfVendor")]
+        public async Task<IActionResult> ViewPickupsVendor()
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromClaims();
+                var userId = userIdResult.Value;
+                var res = await _pickupServices.GetPickupsVendor(userId);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+
+
+        [Authorize(Roles = "DeliveryPerson")]
+        [HttpPost("verificationdelivery&Vendor")]
+        public async Task<IActionResult> VerifyPickupsByDeliveryToVendor(Guid PiickId)
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromClaims();
+                var userId = userIdResult.Value;
+                var verify = await _pickupServices.VerifyPickupByDeliveryboyToVendor(PiickId, userId);
+                if (verify)
+                {
+                    var resp = new ApiResponse<bool>(200, "verified", verify);
+                    return Ok(resp);
+                }
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+        }
+
 
 
 
@@ -91,5 +149,24 @@ namespace Qyrenx.Controllers
 
             return Unauthorized();
         }
+
+
+
+        [Authorize(Roles = "DeliveryPerson")]
+        [HttpPost("VendorVerficationOtp")]
+        public async Task<IActionResult> VendorOtpVerify(Guid PiickId, string otp)
+        {
+            try
+            {
+                var data = await _pickupServices.pickupVerificationofVendor(PiickId, otp);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
     }
-}
+    }

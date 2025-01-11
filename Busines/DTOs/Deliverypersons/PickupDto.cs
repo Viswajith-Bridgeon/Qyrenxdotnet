@@ -11,11 +11,20 @@ namespace Qyrenx.Business.DTOs.Deliverypersons
     {
         public Guid Id {  get; set; }
         public Guid UserId { get; set; }
+        public string UserName { get; set; }
+        public int UserNumber { get; set; }
+        public Guid UserAddressId { get; set; }
+
         public string GadgetName { get; set; }
         public string Image { get; set; }
         public string Description { get; set; }
-        public Guid AddressId { get; set; }
-        public Guid vendorId { get; set; }
        
+        public string ShopName { get; set; }
+
+        public string ShopOwnerNamw { get; set; }
+
+        public int ShopNumber { get; set; }
+
+        public string shopAddressId { get; set; }
     }
 }
