@@ -29,11 +29,12 @@ namespace Qyrenx.Business.Services.CategoryServices
             _category = category;
         }
 
-        public async Task<IEnumerable<Category>> GetCategory()
+        public async Task<IEnumerable<CategoryViewDto>> GetCategory()
         {
             try
             {
-                var res=await _category.GetCategory();
+                var categories=await _category.GetCategory();
+                var res=_mapper.Map<IEnumerable<CategoryViewDto>>(categories);
                 return res;
             }
             catch (Exception ex)
