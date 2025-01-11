@@ -47,12 +47,24 @@ namespace Qyrenx.Controllers
                 var userIdResult = GetUserIdFromClaims();
                 var userId = userIdResult.Value;
                 var verify = await _pickupServices.VerifyPickup(PiickId, userId);
-                if (verify)
+                if (verify== "already verified")
                 {
-                    var resp = new ApiResponse<bool>(200, "verified", verify);
-                    return Ok(resp);
+                    var resp = new ApiResponse<string>(409, verify);
+                    return Conflict(resp);
                 }
-                return BadRequest();
+                if (verify == "not is delveryboy")
+                {
+                    var resp = new ApiResponse<string>(400, verify);
+                    return BadRequest(resp);
+                }
+                if (verify == "something wrong in email")
+                {
+                    var resp = new ApiResponse<string>(400, verify);
+                    return BadRequest(resp);
+                }
+                var res = new ApiResponse<string>(200, verify);
+                return Ok(res);
+
             }
             catch (Exception ex)
             {
@@ -100,12 +112,24 @@ namespace Qyrenx.Controllers
             try
             {
                 var data = await _pickupServices.pickupVerificationofUser(PiickId, otp);
-                return Ok(data);
+                if(data== "invalid pickup id")
+                {
+                    var res = new ApiResponse<string>(400, data);
+                    return BadRequest(res);
+                }
+                if (data == "invalid user email")
+                {
+                    var res = new ApiResponse<string>(400, data);
+                    return BadRequest(res);
+                }
+                var resp = new ApiResponse<string>(200, data);
+                return Ok(resp);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.InnerException.Message);
             }
+          
 
         }
 
@@ -138,12 +162,19 @@ namespace Qyrenx.Controllers
                 var userIdResult = GetUserIdFromClaims();
                 var userId = userIdResult.Value;
                 var verify = await _pickupServices.VerifyPickupByDeliveryboyToVendor(PiickId, userId);
-                if (verify)
+                if (verify == "already verified")
                 {
-                    var resp = new ApiResponse<bool>(200, "verified", verify);
-                    return Ok(resp);
+                    var resp = new ApiResponse<string>(409, verify);
+                    return Conflict(resp);
                 }
-                return BadRequest();
+                if (verify == "invalid vendor email")
+                {
+                    var resp = new ApiResponse<string>(400, verify);
+                    return BadRequest(resp);
+                }
+                var res = new ApiResponse<string>(200, verify);
+                return Ok(res);
+
             }
             catch (Exception ex)
             {
@@ -177,7 +208,13 @@ namespace Qyrenx.Controllers
             try
             {
                 var data = await _pickupServices.pickupVerificationofVendor(PiickId, otp);
-                return Ok(data);
+                if(data)
+                {
+                    var res = new ApiResponse<bool>(200,"successfully completed otp verification" ,data);
+                    return Ok(res);
+                }
+                var resp = new ApiResponse<bool>(400, "wrong otp", data);
+                return BadRequest(resp);
             }
             catch (Exception ex)
             {

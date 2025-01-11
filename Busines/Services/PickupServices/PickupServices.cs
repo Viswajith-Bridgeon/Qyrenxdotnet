@@ -65,32 +65,33 @@ namespace Qyrenx.Business.Services.PickupServices
                 throw new Exception(ex.InnerException.Message);
             }
         }
-        public async Task<bool>VerifyPickup(Guid id,Guid userid)
+        public async Task<string>VerifyPickup(Guid id,Guid userid)
         {
             try
             {
                 var data= await _pickupsRepo.GetPickupById(id);
-                bool verified=false;
-                if (data.DeliveryPersonId == userid)
+                var status=await _context.Status.Where(e=>e.PickupId==data.Id).ToListAsync();
+                var lastStatus=status.OrderByDescending(e=>e.CreatedOn).FirstOrDefault();
+               if(lastStatus.Statuss== "payment successfull waiting for Deliveryperson")
                 {
-                    verified = true;
-                    if (verified)
+                    if (data.DeliveryPersonId == userid)
                     {
-                        var gad = await _gadgetRepo.GetordergadgetsById(data.GadgetId);
-                        var user = await _userRepo.GetUserById(gad.UserId);
-                        var delivery = await _deliveryRepo.GetDeliveryPeresonById(userid);
+                            var gad = await _gadgetRepo.GetordergadgetsById(data.GadgetId);
+                            var user = await _userRepo.GetUserById(gad.UserId);
+                            var delivery = await _deliveryRepo.GetDeliveryPeresonById(userid);
 
-                        var mail_send = _emailServices.SendOtpForDeliveryBoyVerification(user.Email);
-                        if (mail_send != null)
-                        {
-                            return true;
-                        }
-                        return false;
+                            var mail_send =await  _emailServices.SendOtpForDeliveryBoyVerification(user.Email);
+                            if (mail_send)
+                            {
+                                return "verification suucessfully completed and sending otp";
+                            }
+                            return "something wrong in email";
+                       
                     }
-                    return verified;
+
+                    return "not is delveryboy";
                 }
-               
-                return false;
+                return "already verified";
             }
             catch (Exception ex)
             {
@@ -213,14 +214,14 @@ namespace Qyrenx.Business.Services.PickupServices
 
 
 
-        public async Task<bool> pickupVerificationofUser(Guid pid, string otp)
+        public async Task<string> pickupVerificationofUser(Guid pid, string otp)
         {
             try
             {
                 var pick=await _pickupsRepo.GetPickupById(pid);
                 if(pick==null)
                 {
-                    return false;
+                    return "invalid pickup id";
                 }
                 var gad=await _gadgetRepo.GetordergadgetsById(pick.GadgetId);
                 var user=await _userRepo.GetUserById(gad.UserId);
@@ -234,13 +235,13 @@ namespace Qyrenx.Business.Services.PickupServices
                     };
                     await _context.Status.AddAsync(status);
                     await _context.SaveChangesAsync();
-                    return true;
+                    return "DeliveryPerson Recevied Successfully";
                 }
-                return false;
+                return "invalid user email";
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error in GetCoordinatesFromAddress: {ex.Message}", ex);
+                throw new Exception(ex.InnerException.Message);
             }
         }
 
@@ -264,31 +265,27 @@ namespace Qyrenx.Business.Services.PickupServices
         }
 
 
-        public async Task<bool> VerifyPickupByDeliveryboyToVendor(Guid pid, Guid userid)
+        public async Task<string> VerifyPickupByDeliveryboyToVendor(Guid pid, Guid userid)
         {
             try
             {
                 var data = await _pickupsRepo.GetPickupById(pid);
-                bool verified = false;
-                if (data.DeliveryPersonId == userid)
+                var status = await _context.Status.Where(e => e.PickupId == data.Id).ToListAsync();
+                var lastStatus = status.OrderByDescending(e => e.CreatedOn).FirstOrDefault();
+                if (lastStatus.Statuss == "DeliveryPerson Recevied Successfully")
                 {
-                    verified = true;
-                    if (verified)
+                    
+                   var gad = await _gadgetRepo.GetordergadgetsById(data.GadgetId);
+                   var vendor = await _vendorRepo.GetVendorById(data.VendorId);
+                    var mail_send =await  _emailServices.SendOtpForVendorVerification(vendor.Email);
+                    if (mail_send)
                     {
-                        var gad = await _gadgetRepo.GetordergadgetsById(data.GadgetId);
-                        var vendor = await _vendorRepo.GetVendorById(data.VendorId);
-
-                        var mail_send = _emailServices.SendOtpForVendorVerification(vendor.Email);
-                        if (mail_send != null)
-                        {
-                            return true;
-                        }
-                        return false;
+                        return "suucessfully verified and sending otp";
                     }
-                    return verified;
+                     return "invalid vendor email";
+                   
                 }
-
-                return false;
+                return "Already verified";
             }
             catch (Exception ex)
             {
