@@ -58,5 +58,22 @@ namespace Qyrenx.Controllers
                 return StatusCode(500, r);
             }
         }
+
+        [HttpGet("gadgets_of_user")]
+        public async Task<IActionResult> GetUserGadgets()
+        {
+            try
+            {
+                var usedId = Guid.Parse(HttpContext.Items["Id"].ToString());
+                var gdget = await _gadgetSerives.GetAllUserGadgets(usedId);
+                var r = new ApiResponse<List<GadgetviewDto>>(402, "error occured", gdget);
+                return Ok(r);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "sewrver error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
     }
 }

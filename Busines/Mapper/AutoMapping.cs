@@ -39,10 +39,12 @@ namespace Qyrenx.Business.Mapper
                  .ForMember(e => e.Image, e => e.MapFrom(e => e.Gadget.Image))
                  .ForMember(e => e.GadgetName, e => e.MapFrom(e => e.Gadget.GadgetName))
                   .ForMember(e => e.Description, e => e.MapFrom(e => e.Gadget.Description));
+            CreateMap<Category, CategoryViewDto>().ReverseMap();
             CreateMap<VendorCost,VendorCostDto>().ReverseMap();
             CreateMap<VendorCost,VendorCostView>().ReverseMap();
+           
 
 
-    }
+        }
     }
 }
