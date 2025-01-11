@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Qyrenx.Business.DTOs.VendorDtos;
 using Qyrenx.Business.Services.PickupServices;
 using Qyrenx.Business.Services.VendorServices;
 using Qyrenx.Dataccess.ApiResponses;
@@ -66,6 +67,23 @@ namespace Qyrenx.Controllers
             {
                 var data = await _pickupServices.LatLongOfUser(PiickId);
                 return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+        [Authorize(Roles = "Vendor")]
+        [HttpPost("sendformtouser")]
+        public async Task<IActionResult>SendFormToUser([FromBody]VendorCostDto details)
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromClaims();
+                var userId = userIdResult.Value;
+                var res = await _pickupServices.SendFormToUser(userId, details);
+                return Ok(res);
             }
             catch (Exception ex)
             {

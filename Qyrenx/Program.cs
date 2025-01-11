@@ -27,6 +27,9 @@ using Qyrenx.Dataccess.DbAccess.UserSecurityPay;
 using Qyrenx.Dataccess.DbAccess.GadgetRepo;
 using Qyrenx.Business.Services.PickupServices;
 using Qyrenx.Dataccess.DbAccess.Pickuprep;
+using Qyrenx.Business.Services.HubsServices;
+using Qyrenx.Dataccess.DbAccess.StatusRepo;
+using Qyrenx.Dataccess.DbAccess.VendorCostRepo;
 using Qyrenx.Business.Services.StatusServices;
 
 namespace Qyrenx
@@ -55,6 +58,10 @@ namespace Qyrenx
 
 
             builder.Services.AddControllers();
+            var signalRSettings = builder.Configuration.GetSection("SignalR");
+            var hubUrl = signalRSettings.GetValue<string>("HubUrl");
+            var connectionTimeout = signalRSettings.GetValue<int>("ConnectionTimeout");
+            builder.Services.AddSignalR();
             builder.Services.AddAutoMapper(typeof(AutoMapping));
             builder.Services.AddScoped<IEmailServices, EmailServices>();
             builder.Services.AddScoped<IUserServices,UserServices>();
@@ -76,6 +83,8 @@ namespace Qyrenx
             builder.Services.AddScoped<IuserSecurityRepo, UserSecurityRepo>(); 
             builder .Services.AddScoped<IPickupServices, PickupServices>();
             builder.Services.AddScoped<IpickupsRepo, PickupsRepo>();
+            builder .Services.AddScoped<IstatusRepo,StatusRepo>(); 
+            builder .Services.AddScoped<IVendorCostRepo,VendorCostServicRepo>();
             builder .Services.AddScoped<IStatusServices, StatusServices>();
 
 
@@ -147,6 +156,7 @@ namespace Qyrenx
                 app.UseSwagger();
                 app.UseSwaggerUI(); 
             }
+            app.MapHub<NotificationHub>("/notificationHub");
             app.UseStaticFiles();
             app.UseHttpsRedirection();
 

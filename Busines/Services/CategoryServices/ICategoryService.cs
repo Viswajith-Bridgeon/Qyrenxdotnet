@@ -15,7 +15,7 @@ namespace Qyrenx.Business.Services.CategoryServices
         Task<bool> UpdateCategory(Guid id, string name, IFormFile image);
         Task<bool> DeleteCategory(Guid id);
 
-        Task<IEnumerable<Category>> GetCategory();
+        Task<IEnumerable<CategoryViewDto>> GetCategory();
 
     }
 }

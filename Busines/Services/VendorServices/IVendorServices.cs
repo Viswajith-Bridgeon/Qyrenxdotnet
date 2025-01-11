@@ -20,5 +20,7 @@ namespace Qyrenx.Business.Services.VendorServices
         Task<bool> CategoryAddvendor(Guid id, Guid catid);
         Task <VendorOnline> VendorActivity(Guid id);
         Task<Guid> GetNearestVendorPerson(Guid id);
+        Task<bool> ResetPassword(string Email, string password);
+        Task<bool> VendorAssignDeliveryPerson(Guid venid, Guid pickupid);
     }
 }

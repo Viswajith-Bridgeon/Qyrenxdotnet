@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.DTOs;
 using Qyrenx.Business.DTOs.Deliverypersons;
+using Qyrenx.Business.DTOs.VendorDtos;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Qyrenx.Dataccess.DbAccess.AddressRepo;
 using Qyrenx.Dataccess.DbAccess.DeliveryRepo;
 using Qyrenx.Dataccess.DbAccess.GadgetRepo;
 using Qyrenx.Dataccess.DbAccess.Pickuprep;
+using Qyrenx.Dataccess.DbAccess.StatusRepo;
 using Qyrenx.Dataccess.DbAccess.UserRepo;
 using Qyrenx.Dataccess.DbAccess.VendorRepo;
 using Qyrenx.Dataccess.Models.Entities;
@@ -31,9 +33,11 @@ namespace Qyrenx.Business.Services.PickupServices
         private readonly IgadgetRepo _gadgetRepo;
         private readonly IAddress _address;
         private readonly IdeliveryRepo _deliveryRepo;
-        private readonly QyrenxContext _context;
         private readonly IVendorRepo _vendorRepo;
-        public PickupServices(IpickupsRepo repo,IMapper mapper, IEmailServices emailServices, IuserRepo userRepo, IgadgetRepo gadgetRepo,IAddress address,IdeliveryRepo deliveryRepo,QyrenxContext qyrenxContext,IVendorRepo vendorRepo)
+        private readonly IVendorRepo _vendorRepo;
+        private readonly QyrenxContext _context;
+        private readonly IstatusRepo _statusRepo;
+        public PickupServices(IpickupsRepo repo,IMapper mapper, IEmailServices emailServices, IuserRepo userRepo, IgadgetRepo gadgetRepo,IAddress address, IVendorRepo vendorRepo,QyrenxContext context,IstatusRepo statusRepo, IdeliveryRepo deliveryRepo)
         {
             _pickupsRepo = repo;    
             _mapper = mapper;
@@ -41,8 +45,10 @@ namespace Qyrenx.Business.Services.PickupServices
             _userRepo = userRepo;
             _gadgetRepo = gadgetRepo;
             _address = address;
+            _vendorRepo = vendorRepo;
+            _context = context;
+            _statusRepo = statusRepo;
             _deliveryRepo = deliveryRepo;
-            _context = qyrenxContext;
             _vendorRepo = vendorRepo;
 
         }
@@ -171,6 +177,39 @@ namespace Qyrenx.Business.Services.PickupServices
             return $"{address.City}, {address.PostalCode}";
         }
 
+
+       public async  Task<bool> SendFormToUser(Guid ven_id, VendorCostDto details)
+        {
+            try
+            {
+                var exist_ven=await _vendorRepo.GetVendorById(ven_id);
+                var StatusCheck=await _statusRepo.GetStatusByPickId(details.PickupId);
+                if (StatusCheck.Statuss == "Checking") 
+                {
+                    var add_vendor_cost = new VendorCost
+                    {
+                        VendorId = ven_id,
+                        PickupId = details.PickupId,
+                        ProblemDescription = details.ProblemDescription,
+                        IsServiceable = details.IsServiceable,
+                        SaleCost = details.SaleCost,
+                        CreatedBy = exist_ven.Name,
+                        ServiceCost = details.ServiceCost,
+                    };
+                    var vendor_cast = _mapper.Map<VendorCost>(add_vendor_cost);
+                    await _context.VendorCost.AddAsync(vendor_cast);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+                
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in GetCoordinatesFromAddress: {ex.Message}", ex);
+            }
+        }
 
 
 

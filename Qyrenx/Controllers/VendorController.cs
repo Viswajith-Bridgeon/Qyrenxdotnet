@@ -11,6 +11,7 @@ using Qyrenx.Business.Services.VendorServices;
 using Qyrenx.Dataccess.ApiResponses;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace Qyrenx.present.Controllers
 {
@@ -236,6 +237,106 @@ namespace Qyrenx.present.Controllers
             {
                 return StatusCode(500, ex.InnerException.Message);
 
+            }
+        }
+
+        [HttpPost("Reset-Password-Otp")]
+
+        public async Task<IActionResult> ResetPasswordOtp(string email)
+        {
+            try
+            {
+
+                bool isotpset = await _emailServices.ResetPasswordOtp(email);
+                if (!isotpset)
+                {
+                    var r = new ApiResponse<bool>(404, "Invalid Email", isotpset);
+                    return NotFound(r);
+                }
+
+                var res = new ApiResponse<bool>(200, "otp sending", isotpset);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
+
+        [HttpPost("Reset-Password-Verify")]
+
+        public async Task<IActionResult> ResetPasswordVerify(string email, string otp)
+        {
+            try
+            {
+
+                bool isotpset = _emailServices.verifyOtp(email, otp);
+                if (!isotpset)
+                {
+                    var r = new ApiResponse<bool>(404, "wrong otp", isotpset);
+                    return NotFound(r);
+                }
+
+                var res = new ApiResponse<bool>(200, "otp verified", isotpset);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
+        [HttpPatch("Reset-Password")]
+
+        public async Task<IActionResult> ResetPassword(string email, string Newpassword)
+        {
+            try
+            {
+                string passwordPattern = @"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+
+                if (!Regex.IsMatch(Newpassword, passwordPattern))
+                {
+                    return BadRequest(new { error = "Password does not meet complexity requirements." });
+                }
+
+                bool isPasswordset = await _vendorServices.ResetPassword(email, Newpassword);
+                if (!isPasswordset)
+                {
+                    var r = new ApiResponse<bool>(404, "User not exict", isPasswordset);
+                    return NotFound(r);
+                }
+
+                var res = new ApiResponse<bool>(200, "successfully reseted password", isPasswordset);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult>VendorAssignDeliveryperson(Guid pickupid)
+        {
+            try
+            {
+                var venIdResult = GetUserIdFromClaims();
+                var vendorerId = venIdResult.Value;
+                var res = await _vendorServices.VendorAssignDeliveryPerson(vendorerId, pickupid);
+                if(res)
+                {
+                    return Ok("Delivery person assigned succesfully");
+                }
+                return BadRequest("Error while Assigning delivery person");
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
             }
         }
 

@@ -72,6 +72,20 @@ namespace Qyrenx.Business.Services.GadgetServices
             }
 
         }
+        public async Task<List<GadgetviewDto>> GetAllUserGadgets(Guid userid)
+        {
+            try
+            {
+                var data = await _gadgetRepo.Getgadgets();
+                var res=data.Where(g=>g.UserId == userid);  
+                return _mapper.Map<List<GadgetviewDto>>(res);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
 
     }
 }
