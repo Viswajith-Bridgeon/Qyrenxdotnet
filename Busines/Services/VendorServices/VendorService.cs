@@ -21,6 +21,8 @@ using System.Text.Json.Serialization;
 using Qyrenx.Dataccess.DbAccess.VendorRepo;
 using Qyrenx.Dataccess.DbAccess.CategoryRepo;
 using Qyrenx.Dataccess.DbAccess.AddressRepo;
+using Qyrenx.Dataccess.DbAccess.StatusRepo;
+using Qyrenx.Dataccess.DbAccess.Pickuprep;
 
 namespace Qyrenx.Business.Services.VendorServices
 {
@@ -36,7 +38,9 @@ namespace Qyrenx.Business.Services.VendorServices
         private readonly IVendorRepo _vendorRepo;
         private readonly ICategory _category;
         private readonly IAddress _address;
-        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDeliveryService deliveryService,IVendorRepo vendorRepo,ICategory category, IAddress address)
+        private readonly IstatusRepo _statusRepo;
+        private readonly IpickupsRepo _pickupsRepo;
+        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDeliveryService deliveryService,IVendorRepo vendorRepo,ICategory category, IAddress address, IstatusRepo statusRepo,IpickupsRepo pickupsRepo)
         {
             _context = context;
 			_mapper = mapper;
@@ -47,6 +51,8 @@ namespace Qyrenx.Business.Services.VendorServices
             _vendorRepo = vendorRepo;
             _category = category;
             _address = address;
+            _statusRepo= statusRepo;
+            _pickupsRepo=pickupsRepo;
         }
        
 
@@ -500,6 +506,109 @@ namespace Qyrenx.Business.Services.VendorServices
                 throw new Exception(ex.InnerException?.Message ?? ex.Message);
             }
         }
+
+        public async Task<bool>VendorAssignDeliveryPerson(Guid venid,Guid pickupid)
+        {
+            try
+            {
+                var status = await _statusRepo.GetAllStatus();
+                var allpickup=await _pickupsRepo.GetAllPickup();
+                var pickup=allpickup.FirstOrDefault(p=>p.Id==pickupid);
+                var is_status = status.Where(c => c.PickupId == pickupid && c.Statuss == "Service Completed").FirstOrDefault();
+                if(is_status!=null)
+                {
+                    var getneaestdel_id = await GetNearestDeliveryPerson(venid);
+                    pickup.ReturnDeliveryPersonId= getneaestdel_id;
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+          public async Task<Guid> GetNearestDeliveryPerson(Guid ven_id)
+          {
+            var vendorAddress =await _vendorRepo.GetAllVendorAddresses();
+            var userAddress=vendorAddress.FirstOrDefault(v=>v.VendorId==ven_id);
+            var (UserLat,UserLon)=await GetCoordinatesFromAddress(userAddress);
+            var ActivepPersons = await _deliveryService.GetActiveDeliveryPersons();
+            if (ActivepPersons == null)
+            {
+                throw new Exception("No active delivery persons available.");
+            }
+            DeliveryPersonOnlineDto nearestDeliveryPerson = null;
+            double shortestDistance = double.MaxValue;
+            foreach (var dp in ActivepPersons)
+            {
+                double distance = CalculateDistance(
+                    UserLat, UserLon,
+                    dp.Lat.Value, dp.Long.Value
+                );
+
+                if (distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    nearestDeliveryPerson = new DeliveryPersonOnlineDto
+                    {
+                        DeliveryPersonId = dp.DeliveryPersonId,
+                        IsActive=true,
+                        Lat=UserLat,
+                        Long=UserLon
+                    };
+                }
+            }
+
+            return nearestDeliveryPerson.DeliveryPersonId;
+        }
+
+
+
+        public async Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(VendorAddress address)
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("YourAppName/1.0");
+
+                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(GetFullAddress(address))}&format=json";
+                var response = await httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to fetch coordinates. Error: {errorContent}");
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var data = JsonSerializer.Deserialize<List<GeoResponse>>(json);
+
+                if (data == null || !data.Any())
+                    throw new Exception($"No coordinates found for the address.{GetFullAddress(address)}");
+
+                decimal lat = Convert.ToDecimal(data[0].Lat);
+                decimal lon = Convert.ToDecimal(data[0].Lon);
+
+                return (lat, lon);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in fetching coordinates: {ex.Message}", ex);
+            }
+        }
+
+        private string GetFullAddress(VendorAddress address)
+        {
+            return $"{address.City},{address.PostalCode}";
+        }
+
+
+       
+
+
 
     }
 }

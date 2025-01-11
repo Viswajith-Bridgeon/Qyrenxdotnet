@@ -319,5 +319,26 @@ namespace Qyrenx.present.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult>VendorAssignDeliveryperson(Guid pickupid)
+        {
+            try
+            {
+                var venIdResult = GetUserIdFromClaims();
+                var vendorerId = venIdResult.Value;
+                var res = await _vendorServices.VendorAssignDeliveryPerson(vendorerId, pickupid);
+                if(res)
+                {
+                    return Ok("Delivery person assigned succesfully");
+                }
+                return BadRequest("Error while Assigning delivery person");
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
+        }
+
     }
 }
