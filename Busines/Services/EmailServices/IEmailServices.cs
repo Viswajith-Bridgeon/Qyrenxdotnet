@@ -9,5 +9,10 @@
 
         Task<bool>  ResetPasswordOtp(string email);
 
+        Task<bool> SendOtpForDeliveryBoyVerification(string UserEmail);
+
+        Task<bool>  UserToDeliverPersonVerifyOtp(string UserEmail,string otp);
+
+        Task<bool> SendOtpForVendorVerification(string vendorEmail);
     }
 }

@@ -3,6 +3,7 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.Dataccess.ApplicationDbContext;
 using Microsoft.Extensions.Configuration;
+using Qyrenx.Dataccess.DbAccess.UserRepo;
 
 namespace Qyrenx.Business.Services.EmailServices
 {
@@ -10,14 +11,17 @@ namespace Qyrenx.Business.Services.EmailServices
     {
         private readonly QyrenxContext _context;
         private readonly IConfiguration _configuration;
-        public EmailServices(QyrenxContext context, IConfiguration configuration)
+        private readonly IuserRepo _userRepo;
+        public EmailServices(QyrenxContext context, IConfiguration configuration, IuserRepo userRepo)
         {
             _context = context;
             _configuration = configuration;
+            _userRepo = userRepo;
         }
 
 
         private static Dictionary<string, string> otpDictionary = new Dictionary<string, string>();
+
 
 
         public async Task<bool> sendOtp(string email)
@@ -283,8 +287,201 @@ namespace Qyrenx.Business.Services.EmailServices
         }
 
 
+        private static Dictionary<string, string> otpDictionary2 = new Dictionary<string, string>();
 
-       
+
+
+        public async Task<bool> SendOtpForDeliveryBoyVerification(string UserEmail)
+        {
+            try
+            {
+                string otp = GenerateOTP();
+
+                await SendDeliveryPersonVerificationEmail(UserEmail, otp);
+                otpDictionary2[UserEmail] = otp;
+                return true;
+
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
+
+
+
+        private async Task SendDeliveryPersonVerificationEmail(string toAddress, string otp)
+        {
+            try
+            {
+                //var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == toAddress);
+
+
+                var emailSettings = _configuration.GetSection("EmailSettings");
+
+
+                SmtpClient smtpClient = new SmtpClient(emailSettings["Host"]);
+                smtpClient.Port = int.Parse(emailSettings["Port"]);
+                smtpClient.Credentials = new NetworkCredential(emailSettings["Email"], emailSettings["Password"]);
+                smtpClient.EnableSsl = true;
+
+                MailMessage mailMessage = new MailMessage();
+                mailMessage.From = new MailAddress(emailSettings["Email"]);
+                mailMessage.To.Add(toAddress);
+                mailMessage.Subject = "DeliveryPerson Verification";
+                mailMessage.Body = GenerateEmailBodyfordeliveryPersonVerification("user", otp);
+                mailMessage.IsBodyHtml = true;
+
+                await smtpClient.SendMailAsync(mailMessage);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+
+
+
+        private string GenerateEmailBodyfordeliveryPersonVerification(string name, string otp)
+        {
+            string emailbody = string.Empty;
+            emailbody += $@"<div style='width:100%; max-width:600px; margin:0 auto; font-family:Arial, sans-serif; background-color:#f9f9f9; padding:20px; border:1px solid #ddd; border-radius:8px;'>
+    <div style='text-align:center;'>
+        <img src='https://via.placeholder.com/150x50.png?text=Qyrenx' alt='Qyrenx Logo' style='margin-bottom:20px;' />
+    </div>
+    <h1 style='color:#4CAF50; text-align:center;'>Delivery Person Verification</h1>
+    <p style='font-size:16px; color:#555; text-align:center;'>
+        Hi <strong>{name}</strong>,
+    </p>
+    <p style='font-size:16px; color:#555; text-align:center;'>
+        We are verifying your identity as part of the delivery process. Please use the OTP below to complete your verification.
+    </p>
+    <div style='text-align:center; margin:20px 0;'>
+        <p style='font-size:24px; color:#000; font-weight:bold;'>{otp}</p>
+    </div>
+    <p style='font-size:16px; color:#555; text-align:center;'>
+        This OTP is valid for the next 10 minutes. If you did not initiate this request, please contact us immediately at 
+        <a href='mailto:support@qyrenx.com' style='color:#007BFF;'>support@qyrenx.com</a>.
+    </p>
+    <hr style='border:0; border-top:1px solid #ddd; margin:20px 20px;' />
+    <footer style='text-align:center; font-size:12px; color:#aaa;'>
+        &copy; 2024 Qyrenx. All rights reserved.<br />
+        Visit us at <a href='https://www.qyrenx.com' style='color:#007BFF;'>www.qyrenx.com</a>
+    </footer>
+</div>";
+
+            return emailbody;
+        }
+
+
+
+
+        public async Task<bool> UserToDeliverPersonVerifyOtp(string UserEmail, string otp)
+        {
+            if (otpDictionary2.ContainsKey(UserEmail) && otpDictionary2[UserEmail] == otp)
+            {
+                otpDictionary2.Remove(UserEmail);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+        public async Task<bool> SendOtpForVendorVerification(string vendorEmail)
+        {
+            try
+            {
+                string otp = GenerateOTP();
+
+                await SendVendorVerificationEmail(vendorEmail, otp);
+                otpDictionary2[vendorEmail] = otp;
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
+        private async Task SendVendorVerificationEmail(string toAddress, string otp)
+        {
+            try
+            {
+                //var user = await _context.Vendors.FirstOrDefaultAsync(x => x.Email == toAddress);
+                //if (user == null)
+                //{
+                //    throw new Exception("Vendor with the specified email address not found.");
+                //}
+
+                var emailSettings = _configuration.GetSection("EmailSettings");
+
+
+                SmtpClient smtpClient = new SmtpClient(emailSettings["Host"]);
+                smtpClient.Port = int.Parse(emailSettings["Port"]);
+                smtpClient.Credentials = new NetworkCredential(emailSettings["Email"], emailSettings["Password"]);
+                smtpClient.EnableSsl = true;
+
+                MailMessage mailMessage = new MailMessage();
+                mailMessage.From = new MailAddress(emailSettings["Email"]);
+                mailMessage.To.Add(toAddress);
+                mailMessage.Subject = "Vendor Verification";
+                mailMessage.Body = GenerateEmailBodyforVendorVerification("Vendor", otp);
+                mailMessage.IsBodyHtml = true;
+
+                await smtpClient.SendMailAsync(mailMessage);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+
+        private string GenerateEmailBodyforVendorVerification(string vendorName, string otp)
+        {
+            string emailbody = string.Empty;
+            emailbody += $@"<div style='width:100%; max-width:600px; margin:0 auto; font-family:Arial, sans-serif; background-color:#f9f9f9; padding:20px; border:1px solid #ddd; border-radius:8px;'>
+    <div style='text-align:center;'>
+        <img src='https://via.placeholder.com/150x50.png?text=Qyrenx' alt='Qyrenx Logo' style='margin-bottom:20px;' />
+    </div>
+    <h1 style='color:#4CAF50; text-align:center;'>Vendor Verification</h1>
+    <p style='font-size:16px; color:#555; text-align:center;'>
+        Hi <strong>DeliveryBoy</strong>,
+    </p>
+    <p style='font-size:16px; color:#555; text-align:center;'>
+        To verify the vendor <strong>{vendorName}</strong>, please use the OTP below:
+    </p>
+    <div style='text-align:center; margin:20px 0;'>
+        <p style='font-size:24px; color:#000; font-weight:bold;'>{otp}</p>
+    </div>
+    <p style='font-size:16px; color:#555; text-align:center;'>
+        This OTP is valid for the next 10 minutes. If you didn't request this verification, please contact us immediately at 
+        <a href='mailto:support@qyrenx.com' style='color:#007BFF;'>support@qyrenx.com</a>.
+    </p>
+    <hr style='border:0; border-top:1px solid #ddd; margin:20px 20px;' />
+    <footer style='text-align:center; font-size:12px; color:#aaa;'>
+        &copy; 2024 Qyrenx. All rights reserved.<br />
+        Visit us at <a href='https://www.qyrenx.com' style='color:#007BFF;'>www.qyrenx.com</a>
+    </footer>
+</div>";
+
+            return emailbody;
+        }
+
+
 
     }
 }

@@ -21,7 +21,7 @@ namespace Qyrenx.Dataccess.DbAccess.Pickuprep
         {
             try
             {
-                var data=await _context.Pickups.Include(p => p.Gadget).ToListAsync();
+                var data=await _context.Pickups.Include(p => p.Gadget).ThenInclude(v=>v.Users).Include(v=>v.Vendors).ThenInclude(a=>a.VendorAddress).Include(e => e.DeliveryPersons).ToListAsync();
                 return data;
             }
             catch (Exception ex)

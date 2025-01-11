@@ -14,10 +14,18 @@ namespace Qyrenx.Business.Services.PickupServices
     public interface IPickupServices
     {
         Task<List<PickupDto>> GetPickupsDeliveryBoys(Guid id);
-        Task<bool> VerifyPickup(Guid id, Guid userid);
+        Task<string> VerifyPickup(Guid id, Guid userid);
         Task<LatLong> LatLongOfUser(Guid id);
         Task<bool> SendFormToUser(Guid ven_id, VendorCostDto details);
 
+        Task<string>  pickupVerificationofUser(Guid id,string otp);
+
+        Task<List<PickupVendorDto>> GetPickupsVendor(Guid id);
+
+
+        Task<string> VerifyPickupByDeliveryboyToVendor(Guid id, Guid userid);
+
+        Task<bool> pickupVerificationofVendor(Guid pid, string otp);
 
 
     }

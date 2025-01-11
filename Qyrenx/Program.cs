@@ -30,16 +30,32 @@ using Qyrenx.Dataccess.DbAccess.Pickuprep;
 using Qyrenx.Business.Services.HubsServices;
 using Qyrenx.Dataccess.DbAccess.StatusRepo;
 using Qyrenx.Dataccess.DbAccess.VendorCostRepo;
+using Qyrenx.Business.Services.StatusServices;
 
 namespace Qyrenx
 {
     public class Program
     {
+        private readonly IHostEnvironment env;
+        public Program(IHostEnvironment env)
+        {
+            this.env = env;
+            
+        }
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
+
             // Add services to the container.
+            DotNetEnv.Env.Load("./CustomMidlleware/.env");
+
+
+            var connection = Environment.GetEnvironmentVariable("DATABASE_CONNECTION");
+            var jwtissuer=Environment.GetEnvironmentVariable("JWT_ISSUER");
+            var jwtaudience=Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+            var key=Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+
 
             builder.Services.AddControllers();
             var signalRSettings = builder.Configuration.GetSection("SignalR");
@@ -69,11 +85,12 @@ namespace Qyrenx
             builder.Services.AddScoped<IpickupsRepo, PickupsRepo>();
             builder .Services.AddScoped<IstatusRepo,StatusRepo>(); 
             builder .Services.AddScoped<IVendorCostRepo,VendorCostServicRepo>();
+            builder .Services.AddScoped<IStatusServices, StatusServices>();
 
 
             builder.Services.AddDbContext<QyrenxContext>(options =>
                         options.UseMySql(
-                        builder.Configuration.GetConnectionString("DefaultConnection"),
+                        connection,
                         new MySqlServerVersion(new Version(8, 0, 32)),
                         mysqlOptions => mysqlOptions.EnableRetryOnFailure()));            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -114,6 +131,7 @@ namespace Qyrenx
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
             })
             .AddJwtBearer(options =>
             {
@@ -122,10 +140,11 @@ namespace Qyrenx
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-                    ValidAudience = builder.Configuration["JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+                    ValidIssuer = jwtissuer,
+                    ValidAudience = jwtaudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
                 };
             });
 
@@ -135,7 +154,7 @@ namespace Qyrenx
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(); 
             }
             app.MapHub<NotificationHub>("/notificationHub");
             app.UseStaticFiles();
@@ -144,7 +163,6 @@ namespace Qyrenx
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseMiddleware<IdAcessMiddleware>();
-
 
             app.MapControllers();
 
