@@ -14,5 +14,6 @@ namespace Qyrenx.Business.Services.GadgetServices
 
         Task<bool> Addgadget(Guid id,GadgetAddDto dto,IFormFile img);
         Task<List<GadgetviewDto>> GetAll();
+        Task<List<GadgetviewDto>> GetAllUserGadgets(Guid userid);
     }
 }
