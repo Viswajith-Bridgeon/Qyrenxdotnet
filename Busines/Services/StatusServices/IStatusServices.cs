@@ -12,5 +12,7 @@ namespace Qyrenx.Business.Services.StatusServices
     {
 
         Task<ICollection<StatusViewDto>> GetStatuses(Guid pid);
+
+        Task<bool>  AddStatus(Guid pid,string statuss);
     }
 }

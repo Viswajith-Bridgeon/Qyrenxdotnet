@@ -37,7 +37,22 @@ namespace Qyrenx.Controllers
                 var r = new ApiResponse<string>(500, "server error", null, ex.Message);
                 return StatusCode(500, r);
             }
+        }
 
+        [HttpGet("AddStatus")]
+        public async Task<IActionResult> AddStatus(Guid pid,string status)
+        {
+            try
+            {
+                var res = await _statusServices.GetStatuses(pid);
+                var r = new ApiResponse<ICollection<StatusViewDto>>(200, "successfully reseted password", res);
+                return Ok(r);
+            }
+            catch (Exception ex)
+            {
+                var r = new ApiResponse<string>(500, "server error", null, ex.Message);
+                return StatusCode(500, r);
+            }
         }
     }
 }

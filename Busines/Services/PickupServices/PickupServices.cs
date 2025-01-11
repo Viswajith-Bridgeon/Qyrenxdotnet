@@ -34,7 +34,6 @@ namespace Qyrenx.Business.Services.PickupServices
         private readonly IAddress _address;
         private readonly IdeliveryRepo _deliveryRepo;
         private readonly IVendorRepo _vendorRepo;
-        private readonly IVendorRepo _vendorRepo;
         private readonly QyrenxContext _context;
         private readonly IstatusRepo _statusRepo;
         public PickupServices(IpickupsRepo repo,IMapper mapper, IEmailServices emailServices, IuserRepo userRepo, IgadgetRepo gadgetRepo,IAddress address, IVendorRepo vendorRepo,QyrenxContext context,IstatusRepo statusRepo, IdeliveryRepo deliveryRepo)
@@ -49,7 +48,6 @@ namespace Qyrenx.Business.Services.PickupServices
             _context = context;
             _statusRepo = statusRepo;
             _deliveryRepo = deliveryRepo;
-            _vendorRepo = vendorRepo;
 
         }
 

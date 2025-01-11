@@ -59,7 +59,7 @@ namespace Qyrenx.Business.Mapper
 
             CreateMap<StatusViewDto, Status>().ReverseMap()
               .ForMember(e => e.date, p => p.MapFrom(s => s.CreatedOn));
-                  .ForMember(e => e.Description, e => e.MapFrom(e => e.Gadget.Description));
+                
             CreateMap<Category, CategoryViewDto>().ReverseMap();
             CreateMap<VendorCost,VendorCostDto>().ReverseMap();
             CreateMap<VendorCost,VendorCostView>().ReverseMap();

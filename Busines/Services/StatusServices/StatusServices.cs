@@ -39,5 +39,32 @@ namespace Qyrenx.Business.Services.StatusServices
             }
 
         }
+
+        public async Task<bool> AddStatus(Guid pid, string statuss)
+        {
+            try
+            {
+                var pick = await _context.Pickups.FirstOrDefaultAsync(p => p.Id == pid);
+                if (pick == null)
+                {
+                    return false;
+                }
+                var stat = new Status 
+                {
+                    PickupId = pid,
+                    Statuss = statuss
+                };
+                await _context.Status.AddAsync(stat);
+                await _context.SaveChangesAsync();
+                return true;
+
+            }
+
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+
+        }
     }
 }
