@@ -97,7 +97,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
                                 exist.RefreshToken = refreshtoken;
                                 exist.TokenExpiryTime = DateTime.UtcNow.AddDays(30);
                                 await _context.SaveChangesAsync();
-                                return new AllLoginresponses { Name = exist.Name, Id = exist.Id, Token=token, refreshToken=refreshtoken};
+                                return new AllLoginresponses { Name = exist.Name, Id = exist.Id, Token=token, refreshToken=refreshtoken,Role=exist.Role,Email=exist.Email};
 
                             }
                             return new AllLoginresponses { Error = "person is blocked " };
