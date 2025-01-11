@@ -21,6 +21,6 @@ namespace Qyrenx.Business.Services.VendorServices
         Task <VendorOnline> VendorActivity(Guid id);
         Task<Guid> GetNearestVendorPerson(Guid id);
         Task<bool> ResetPassword(string Email, string password);
-        Task<bool> VendorAssignDeliveryPerson(Guid venid, Guid pickupid)
+        Task<bool> VendorAssignDeliveryPerson(Guid venid, Guid pickupid);
     }
 }
