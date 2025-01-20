@@ -45,8 +45,7 @@ namespace Qyrenx.Dataccess.DbAccess.UserRepo
         {
             try
             {
-                var data = await _context.Users.ToListAsync();
-                var user = data.FirstOrDefault(p => p.Id == id);
+                var user = await _context.Users.FirstOrDefaultAsync(p=>p.Id==id); 
                 if (user == null)
                 {
                     return null;

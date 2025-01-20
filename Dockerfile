@@ -4,8 +4,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 8075
+EXPOSE 8076
 
 
 # This stage is used to build the service project
@@ -13,6 +13,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Qyrenx/Qyrenx.csproj", "Qyrenx/"]
+COPY ["Busines/Qyrenx.Business.csproj", "Busines/"]
+COPY ["Dataccess/Qyrenx.Dataccess.csproj", "Dataccess/"]
 RUN dotnet restore "./Qyrenx/Qyrenx.csproj"
 COPY . .
 WORKDIR "/src/Qyrenx"
