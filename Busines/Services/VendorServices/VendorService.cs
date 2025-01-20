@@ -1,0 +1,614 @@
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Qyrenx.Business.Services.CloudinaryService;
+using Qyrenx.Business.Services.EmailServices;
+using Qyrenx.Business.Services.JwtServices;
+using Qyrenx.Dataccess.Models.Entities;
+using Qyrenx.Business.Models.DTOs.VendorDtos;
+using Qyrenx.Dataccess.ApplicationDbContext;
+using Qyrenx.Business.DTOs.VendorDtos;
+using Qyrenx.Dataccess.DbAccess;
+using Qyrenx.Business.Services.DeliveryServices;
+using System.Text.Json;
+using Qyrenx.Business.DTOs.Deliverypersons;
+using Qyrenx.Business.DTOs.VendorActiveDto;
+using CloudinaryDotNet.Actions;
+using Qyrenx.Business.DTOs;
+using System.Globalization;
+using System.Text.Json.Serialization;
+using Qyrenx.Dataccess.DbAccess.VendorRepo;
+using Qyrenx.Dataccess.DbAccess.CategoryRepo;
+using Qyrenx.Dataccess.DbAccess.AddressRepo;
+using Qyrenx.Dataccess.DbAccess.StatusRepo;
+using Qyrenx.Dataccess.DbAccess.Pickuprep;
+
+namespace Qyrenx.Business.Services.VendorServices
+{
+    public class VendorService : IVendorServices
+	{
+		private readonly QyrenxContext _context;
+		private readonly IMapper _mapper;
+		private readonly IConfiguration _configuration;
+		private readonly ICloudinaryService _cloudinaryService;
+		private readonly IJwtService _jwtService;
+		private readonly IEmailServices _emailServices;
+        private readonly IDeliveryService _deliveryService;
+        private readonly IVendorRepo _vendorRepo;
+        private readonly ICategory _category;
+        private readonly IAddress _address;
+        private readonly IstatusRepo _statusRepo;
+        private readonly IpickupsRepo _pickupsRepo;
+        public VendorService(QyrenxContext context,ICloudinaryService cloudinaryService,IMapper mapper,IJwtService jwtService,IEmailServices emailServices,IDeliveryService deliveryService,IVendorRepo vendorRepo,ICategory category, IAddress address, IstatusRepo statusRepo,IpickupsRepo pickupsRepo)
+        {
+            _context = context;
+			_mapper = mapper;
+			_cloudinaryService= cloudinaryService;
+			_jwtService=jwtService;
+            _emailServices = emailServices;
+            _deliveryService = deliveryService;
+            _vendorRepo = vendorRepo;
+            _category = category;
+            _address = address;
+            _statusRepo= statusRepo;
+            _pickupsRepo=pickupsRepo;
+        }
+       
+
+		public async Task<IEnumerable<VendorAdminViewDto>> GetVendor()
+		{
+			var vendors = _context.Vendors.Include(v=>v.VendorAddress);
+            var vendor = vendors.Select(v => new VendorAdminViewDto
+            {
+                Id = v.Id,
+                Name = v.Name,
+                ShopeName = v.ShopeName,
+                ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
+                Mobile = v.Mobile,
+                Email = v.Email,
+                IsBlock = v.IsBlock,
+                //City = v.VendorAddress.City,
+                //House = v.VendorAddress.House,
+                //LandMark = v.VendorAddress.LandMark,
+                //PostalCode = v.VendorAddress.PostalCode,
+            });
+			return vendor.ToList();
+		}
+
+		public async Task<VendorAdminViewDto> GetVendorById(Guid id)
+		{
+			try
+			{
+				var exist = await _vendorRepo.GetVendorById(id);
+				if (exist == null)
+					return new VendorAdminViewDto { };
+				var vendor = _mapper.Map<VendorAdminViewDto>(exist);
+				return vendor;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}
+		}
+
+		//public async Task<IEnumerable<VendorAdminViewDto>> GetVendorByShopeName(string name)
+		//{
+		//	var vendors = _context.Vendors.Where(c => c.ShopeName.ToLower().Contains(name.ToLower()));
+		//	if (!vendors.Any())
+		//	{
+		//		return Enumerable.Empty<VendorAdminViewDto>();
+		//	}
+		//	var vendor = vendors.Select(v => new VendorAdminViewDto
+		//	{
+		//		Id = v.Id,
+		//		Name = v.Name,
+		//		ShopeName = v.ShopeName,
+		//		ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
+		//		Mobile = v.Mobile,
+		//		Email = v.Email,
+  //              IsBlock= v.IsBlock,
+		//	});
+		//	return vendor.ToList();
+		//}
+
+		public async Task<IEnumerable<VendorAdminViewDto>> GetVendorNotVerified()
+		{
+			var vendors = await _vendorRepo.GetVendorNotVerified();
+			var vendor = vendors.Select(v => new VendorAdminViewDto
+			{
+				Id = v.Id,
+				Name = v.Name,
+				ShopeName = v.ShopeName,
+				ShopeLicense = Path.ChangeExtension(v.ShopeLicense, ".jpg"),
+				Mobile = v.Mobile,
+				Email = v.Email,
+                IsBlock= v.IsBlock,
+			});
+			return vendor.ToList();
+		}
+
+		public async Task<AllLoginresponses> LoginVendor(VendorLogin loginDto)
+		{
+			try
+			{
+				var exist = await _vendorRepo.GetVendorByMail(loginDto.Email);
+				if (exist != null)
+				{
+					if (BCrypt.Net.BCrypt.Verify(loginDto.Password, exist.HashPassword))
+					{
+						if (exist.IsVerified == true)
+						{
+							if (exist.IsBlock == false)
+							{
+								var token = _jwtService.GenerateJwt(exist.Id, exist.Email, exist.Role);
+                                var refreshtoken=await _jwtService.CreaterefreshToken(exist.Id, exist.Email, exist.Role);
+                                exist.RefreshToken = refreshtoken;
+                                exist.TokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                                await _context.SaveChangesAsync();
+                                return new AllLoginresponses{ Name = exist.Name, Id = exist.Id,Email=exist.Email,Role=exist.Role, Token = token ,refreshToken=refreshtoken};
+							}
+							return new AllLoginresponses { Error = "person is blocked " };
+						}
+						return new AllLoginresponses { Error = "persons verification is pending!" };
+					}
+					return new AllLoginresponses { Error = "enter valid credentials" };
+				}
+				return new AllLoginresponses { Error = "no such vendor person is registered" };
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.InnerException.Message);
+			}
+		}
+
+		public async Task<string> RegisterVendor(VendorRegisterDto registerDto, IFormFile shopelicense)
+		{
+			try
+			{
+
+                bool emailverify = _emailServices.verifyOtp(registerDto.Email, registerDto.otp);
+                var exist = await _vendorRepo.GetVendorByMail(registerDto.Email);
+				if (exist != null)
+				{
+					return "vendor already exist";
+				}
+				if (emailverify)
+				{
+					var license = await _cloudinaryService.UploadDocumentAsync(shopelicense);
+                    var new_vendor = _mapper.Map<Vendor>(registerDto);
+                    new_vendor.HashPassword = registerDto.Password;
+                    new_vendor.ShopeLicense = license;
+                    var vendorreg = await _vendorRepo.VendorRegistration(new_vendor);
+                    if (vendorreg != null)
+                    {
+                        var v_id = await _vendorRepo.GetVendorByMail(registerDto.Email);
+                        var vendoraddress = _mapper.Map<VendorAddress>(registerDto);
+                        vendoraddress.VendorId = v_id.Id;
+                        var result = await _vendorRepo.AddVendorAddress(vendoraddress);
+                        if (result == true)
+                        {
+                            var data1 = await _vendorRepo.GetVendorByMail(registerDto.Email);
+                            await VendorActivity(data1.Id);
+                            return "registered successfully";
+                        }
+                        return "something went wrong";
+                    }
+                    
+				}
+				return "wrong otp";
+			}
+			catch (Exception ex)
+			{
+				throw new Exception($"Registration Failed ,MSG {ex}");
+			}
+		}
+		public async Task<bool> BlockOrUnblockVendor(Guid id)
+		{
+			try
+			{
+				var vendor = await _vendorRepo.BlockOrUnblockVendor(id);
+				return vendor;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception("There was an ERORR in block");
+			}
+		}
+		//public async Task<bool> UnblockVendor(Guid id)
+		//{
+		//	try
+		//	{
+		//		var vendor = await _context.Vendors.FindAsync(id);
+		//		if (vendor == null)
+		//		{
+		//			return false;
+		//		}
+		//		vendor.IsBlock = false;
+		//		await _context.SaveChangesAsync();
+		//		return true;
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		throw new Exception("There was an ERORR in unblock");
+		//	}
+		//}
+
+		public async Task<bool> VerificationVendor(Guid id)
+		{
+			try
+			{
+				var vendor = await _vendorRepo.VerificationVendor(id);
+				return true;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception("There was an ERORR in VERIFICATION");
+			}
+		}
+
+        public async Task<Guid> VendorAssign(Guid catid)
+        {
+            try
+            {
+                // Step 1: Get all vendor ids related to the given category
+                var vendorInCategory = await _context.VendorCategories
+                    .Where(c => c.CategoryId == catid)
+                    .Include(c => c.Vendor)
+                        .ThenInclude(v => v.Pickups)
+                            .ThenInclude(p => p.Statuss)
+                    .ToListAsync();
+
+                if (vendorInCategory == null || !vendorInCategory.Any())
+                {
+                    throw new Exception("No vendors found for the given category.");
+                }
+
+                // Step 2: Get the vendor ids
+                var vendorIds = vendorInCategory.Select(vc => vc.Vendor.Id).ToList();
+
+                // Step 3: Get all pickups associated with the vendors in this category
+                var pickupsForVendors = await _context.Pickups
+                    .Where(p => vendorIds.Contains(p.VendorId))
+                    .Include(p => p.Statuss) // Include pickup statuses
+                    .ToListAsync();
+
+                // Step 4: Filter pickups that are 'Pending'
+                var pendingPickups = pickupsForVendors
+                    .Where(p => p.Statuss.Any(s => s.Statuss == "Pending"))
+                    .ToList();
+
+                // Step 5: Calculate completion rate for each vendor
+                var vendorCompletionRates = vendorIds.Select(vendorId =>
+                {
+                    var totalPickups = pickupsForVendors.Count(p => p.VendorId == vendorId);
+                    var completedPickups = pickupsForVendors.Count(p => p.VendorId == vendorId && p.Statuss.Any(s => s.Statuss == "Completed"));
+                    var completionRate = totalPickups == 0 ? 100 : (completedPickups / (double)totalPickups) * 100;
+
+                    return new
+                    {
+                        VendorId = vendorId,
+                        CompletionRate = completionRate,
+                        PendingWorks = pendingPickups.Count(p => p.VendorId == vendorId)
+                    };
+                }).ToList();
+
+                // Step 6: Sort vendors by completion rate
+                var sortedVendors = vendorCompletionRates
+                    .OrderByDescending(v => v.CompletionRate)
+                    .ThenBy(v => v.PendingWorks)
+                    .ToList();
+
+                // Step 7: Assign vendor if there's no pickup data
+                if (!sortedVendors.Any())
+                {
+                    // Return the first available vendor from the category
+                    return vendorInCategory.First().Vendor.Id;
+                }
+
+                // Step 8: Return the vendor id with the highest priority
+                var selectedVendor = sortedVendors.First();
+                return selectedVendor.VendorId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex); // Preserve stack trace for better debugging
+            }
+        }
+
+        public async Task<bool> CategoryAddvendor(Guid id, Guid catid)
+        {
+            try
+            {
+                var exist = await _vendorRepo.GetVendorById(id);
+                if (exist == null)
+                {
+                    return false;
+                }
+
+                var catexist = await _category.GetCategoryById(catid);
+                if (catexist == null)
+                {
+                    return false;
+                }
+                var cat_in_vandorcat = await _context.VendorCategories.Include(r => r.Vendor).FirstOrDefaultAsync(v => v.VendorId == id && v.CategoryId == catid);
+                if (cat_in_vandorcat != null)
+                {
+                    return false;
+                }
+
+
+                var category = new VendorCategoryAddDto
+                {
+                    VendorId = id,
+                    CategoryId = catid
+                };
+                var cat = _mapper.Map<VendorCategory>(category);
+                _context.VendorCategories.Add(cat);
+                await _context.SaveChangesAsync();
+                return true;
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred while adding the category for the vendor: {ex.Message}", ex);
+            }
+        }
+
+
+        public async Task<VendorOnline> VendorActivity(Guid id)
+        {
+            try
+            {
+                var data = await _vendorRepo.GetAllVendorOnline();
+                var vendor = data.FirstOrDefault(p => p.VendorId == id);
+                var vendorAddress= await _vendorRepo.GetAllVendorAddresses();
+                var adrs=vendorAddress.FirstOrDefault(p => p.VendorId == id);
+
+                if (vendor == null)
+                {
+                    var latlong = GetCoordinatesFromAddress(adrs.City, adrs.PostalCode);
+                    var vonline= new VendorOnline
+                    {
+                        IsActive=true,
+                        VendorId=id,
+                        Lat=latlong.Result.lat,
+                        Long=latlong.Result.lon
+                    };
+                    await _context.VendorOnline.AddAsync(vonline);
+                    await _context.SaveChangesAsync();
+                    return vonline;
+                }
+
+                return new VendorOnline();
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred while adding the category for the vendor: {ex.Message}", ex);
+            }
+        }
+
+
+
+
+        private async Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(string city, string postalCode)
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("YourAppName/1.0");
+
+                var address = GetFullAddress(city, postalCode);
+                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(address)}&format=json";
+
+                Console.WriteLine($"Requesting: {url}");
+
+                var response = await httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to fetch coordinates. Error: {errorContent}");
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var data = JsonSerializer.Deserialize<List<GeoResponse>>(json);
+
+                if (data == null || !data.Any())
+                {
+                    throw new Exception($"No coordinates found for the address: {address}");
+                }
+
+                decimal lat = Convert.ToDecimal(data[0].Lat, CultureInfo.InvariantCulture);
+                decimal lon = Convert.ToDecimal(data[0].Lon, CultureInfo.InvariantCulture);
+
+                return (lat, lon);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in fetching coordinates: {ex.Message}", ex);
+            }
+        }
+
+        private string GetFullAddress(string city, string postalCode)
+        {
+            return $"{city}, {postalCode}";
+        }
+
+       
+        public async Task<Guid> GetNearestVendorPerson(Guid id)
+        {
+            var user = await _address.GetAllAddress();
+            var userAddress = user.FirstOrDefault(p => p.Id == id);
+            var (UserLat, UserLon) = await _deliveryService.GetCoordinatesFromAddress(userAddress);
+            var Persons = await _vendorRepo.GetAllVendorOnline();
+            var ActivepPersons=Persons.Where(p=>p.IsActive==true).ToList();
+            if (ActivepPersons == null)
+            {
+                throw new Exception("No active delivery persons available.");
+
+            }
+            VendorOnline nearestVendorPerson = null;
+            double shortestDistance = double.MaxValue;
+            foreach (var dp in ActivepPersons)
+            {
+                double distance = CalculateDistance(
+                    UserLat, UserLon,
+                    dp.Lat, dp.Long
+                );
+
+                if (distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    nearestVendorPerson = dp;
+                }
+            }
+
+            return nearestVendorPerson.VendorId;
+        }
+        private double CalculateDistance(decimal lat1, decimal lon1, decimal lat2, decimal lon2)
+        {
+            const double R = 6371; // Radius of Earth in kilometers
+            double dLat = ToRadians((double)(lat2 - lat1));
+            double dLon = ToRadians((double)(lon2 - lon1));
+
+            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                       Math.Cos(ToRadians((double)lat1)) * Math.Cos(ToRadians((double)lat2)) *
+                       Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            return R * c; // Distance in kilometers
+        }
+
+        private double ToRadians(double angle) => Math.PI * angle / 180.0;
+
+
+        public async Task<bool> ResetPassword(string Email, string password)
+        {
+            try
+            {
+                var user = await _vendorRepo.GetVendorByMail(Email);
+                if (user == null)
+                {
+                    return false;
+                }
+                var haspassword = BCrypt.Net.BCrypt.HashPassword(password);
+                user.HashPassword = haspassword;
+                user.UpdatedOn = DateTime.UtcNow;
+                user.UpdatedBy = user.Name;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+        public async Task<bool>VendorAssignDeliveryPerson(Guid venid,Guid pickupid)
+        {
+            try
+            {
+                var status = await _statusRepo.GetAllStatus();
+                var allpickup=await _pickupsRepo.GetAllPickup();
+                var pickup=allpickup.FirstOrDefault(p=>p.Id==pickupid);
+                var is_status = status.Where(c => c.PickupId == pickupid && c.Statuss == "Service Completed").FirstOrDefault();
+                if(is_status!=null)
+                {
+                    var getneaestdel_id = await GetNearestDeliveryPerson(venid);
+                    pickup.ReturnDeliveryPersonId= getneaestdel_id;
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+          public async Task<Guid> GetNearestDeliveryPerson(Guid ven_id)
+          {
+            var vendorAddress =await _vendorRepo.GetAllVendorAddresses();
+            var userAddress=vendorAddress.FirstOrDefault(v=>v.VendorId==ven_id);
+            var (UserLat,UserLon)=await GetCoordinatesFromAddress(userAddress);
+            var ActivepPersons = await _deliveryService.GetActiveDeliveryPersons();
+            if (ActivepPersons == null)
+            {
+                throw new Exception("No active delivery persons available.");
+            }
+            DeliveryPersonOnlineDto nearestDeliveryPerson = null;
+            double shortestDistance = double.MaxValue;
+            foreach (var dp in ActivepPersons)
+            {
+                double distance = CalculateDistance(
+                    UserLat, UserLon,
+                    dp.Lat.Value, dp.Long.Value
+                );
+
+                if (distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    nearestDeliveryPerson = new DeliveryPersonOnlineDto
+                    {
+                        DeliveryPersonId = dp.DeliveryPersonId,
+                        IsActive=true,
+                        Lat=UserLat,
+                        Long=UserLon
+                    };
+                }
+            }
+
+            return nearestDeliveryPerson.DeliveryPersonId;
+        }
+
+
+
+        public async Task<(decimal lat, decimal lon)> GetCoordinatesFromAddress(VendorAddress address)
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("YourAppName/1.0");
+
+                var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(GetFullAddress(address))}&format=json";
+                var response = await httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to fetch coordinates. Error: {errorContent}");
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var data = JsonSerializer.Deserialize<List<GeoResponse>>(json);
+
+                if (data == null || !data.Any())
+                    throw new Exception($"No coordinates found for the address.{GetFullAddress(address)}");
+
+                decimal lat = Convert.ToDecimal(data[0].Lat);
+                decimal lon = Convert.ToDecimal(data[0].Lon);
+
+                return (lat, lon);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in fetching coordinates: {ex.Message}", ex);
+            }
+        }
+
+        private string GetFullAddress(VendorAddress address)
+        {
+            return $"{address.City},{address.PostalCode}";
+        }
+
+
+       
+
+
+
+    }
+}
