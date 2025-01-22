@@ -431,5 +431,36 @@ namespace Qyrenx.Business.Services.PickupServices
             }
         }
 
+
+
+
+
+        public async Task<ICollection<PickUpDto>> UserApprovedService(Guid Vcid)
+        {
+            try
+            {
+                var pickups = await _pickupsRepo.GetPickupByVendorId(Vcid);
+                List<Pickup> pickids = new List<Pickup>();
+                if (pickups!=null)
+                {
+                   foreach(var picks in pickups)
+                    {
+                        var vc=await _vendorCostRepo.GetVendorCostByPickup(picks.Id);
+                        if (vc != null && vc.IsServices==true)
+                        {
+                            pickids.Add(picks);
+                        }
+
+                    }
+                    return _mapper.Map<ICollection<PickUpDto>>(pickids);
+
+                }
+                return new List<PickUpDto>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
     }
 }

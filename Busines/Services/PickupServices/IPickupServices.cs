@@ -34,5 +34,7 @@ namespace Qyrenx.Business.Services.PickupServices
 
 
         Task<string> UserApproveService(Guid Vc_id);
+
+        Task<ICollection<PickUpDto>> UserApprovedService(Guid Vcid);
     }
 }
