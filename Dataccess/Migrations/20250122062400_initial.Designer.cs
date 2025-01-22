@@ -12,8 +12,8 @@ using Qyrenx.Dataccess.ApplicationDbContext;
 namespace Qyrenx.Dataccess.Migrations
 {
     [DbContext(typeof(QyrenxContext))]
-    [Migration("20250109114618_newDataaccess")]
-    partial class newDataaccess
+    [Migration("20250122062400_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -437,6 +437,9 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<Guid?>("ReturnDeliveryPersonId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("longtext");
 
@@ -556,9 +559,9 @@ namespace Qyrenx.Dataccess.Migrations
                         new
                         {
                             Id = new Guid("a1f5d5da-e94d-44f1-a8c3-b60f42101a01"),
-                            CreatedOn = new DateTime(2025, 1, 9, 11, 46, 15, 341, DateTimeKind.Utc).AddTicks(802),
+                            CreatedOn = new DateTime(2025, 1, 22, 6, 23, 56, 840, DateTimeKind.Utc).AddTicks(540),
                             Email = "admin@gmail.com",
-                            HashPassword = "$2a$11$8B2xc3fEArvEYtXumqCsP.GQeIoQ3J/iRPO/jD1EmYulnZSBUIc4O",
+                            HashPassword = "$2a$11$e7b3jN9uSF/RBa3NV240k.EYhRwLJ7aO17NTa2aEvDv1x2pO1oxei",
                             IsBlock = false,
                             IsDelete = false,
                             Mobile = 1234567890,
@@ -799,7 +802,10 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("IsServiceable")
+                    b.Property<bool>("IsServices")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsVenorServiceable")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("PickupId")
@@ -826,17 +832,12 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<Guid>("VendorId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("VendorsCostId")
-                        .HasColumnType("char(36)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PickupId")
                         .IsUnique();
 
                     b.HasIndex("VendorId");
-
-                    b.HasIndex("VendorsCostId");
 
                     b.ToTable("VendorCost");
                 });
@@ -1065,17 +1066,9 @@ namespace Qyrenx.Dataccess.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Qyrenx.Dataccess.Models.Entities.VendorCost", "VendorsCost")
-                        .WithMany()
-                        .HasForeignKey("VendorsCostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Pickups");
 
                     b.Navigation("Vendors");
-
-                    b.Navigation("VendorsCost");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.VendorOnline", b =>

@@ -556,9 +556,9 @@ namespace Qyrenx.Dataccess.Migrations
                         new
                         {
                             Id = new Guid("a1f5d5da-e94d-44f1-a8c3-b60f42101a01"),
-                            CreatedOn = new DateTime(2025, 1, 21, 12, 57, 48, 455, DateTimeKind.Utc).AddTicks(4549),
+                            CreatedOn = new DateTime(2025, 1, 22, 6, 23, 56, 840, DateTimeKind.Utc).AddTicks(540),
                             Email = "admin@gmail.com",
-                            HashPassword = "$2a$11$iT3AZ4.D5QrAVOwZsWY18O.Q6WwjQrWDVUaynZXRuFH1DSq7EkiWG",
+                            HashPassword = "$2a$11$e7b3jN9uSF/RBa3NV240k.EYhRwLJ7aO17NTa2aEvDv1x2pO1oxei",
                             IsBlock = false,
                             IsDelete = false,
                             Mobile = 1234567890,
