@@ -278,36 +278,7 @@ namespace Qyrenx.Business.Services.UserServices
             }
         }
 
-        public async Task<VendorCostView> GetSeviceDetialsByPickup(Guid userid,Guid pickupid)
-        {
-            try
-            {
-                var user= await _userRepo.GetUserById(userid);
-                if (user != null)
-                {
-                   var ved_cost=await _vendorCostRepo.GetVendorCostByPickup(pickupid);
-                    var vendor=await _vendorRepo.GetVendorById(ved_cost.VendorId);
-                    var vendor_cost_view = new VendorCostView
-                    {
-                        VendorName = vendor.Name,
-                        SaleCost = ved_cost.SaleCost,
-                        ProblemDescription = ved_cost.ProblemDescription,
-                        IsServiceable = ved_cost.IsServiceable,
-                        PickupId = ved_cost.PickupId,
-                        VendorPhone = vendor.Mobile,
-                        ServiceCost = ved_cost.ServiceCost
-
-                    };
-                    return vendor_cost_view;
-                }
-                return new VendorCostView();
-                
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.InnerException?.Message ?? ex.Message);
-            }
-        }
+      
 
 
     

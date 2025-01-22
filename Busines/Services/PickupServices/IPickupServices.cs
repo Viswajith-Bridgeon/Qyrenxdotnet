@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Qyrenx.Business.DTOs;
 using Qyrenx.Business.DTOs.Deliverypersons;
+using Qyrenx.Business.DTOs.PickUpDtos;
 using Qyrenx.Business.DTOs.VendorDtos;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
@@ -13,7 +14,7 @@ namespace Qyrenx.Business.Services.PickupServices
 {
     public interface IPickupServices
     {
-        Task<List<PickupDto>> GetPickupsDeliveryBoys(Guid id);
+        Task<List<PickupDeliveryDto>> GetPickupsDeliveryBoys(Guid id);
         Task<string> VerifyPickup(Guid id, Guid userid);
         Task<LatLong> LatLongOfUser(Guid id);
         Task<bool> SendFormToUser(Guid ven_id, VendorCostDto details);
@@ -27,6 +28,11 @@ namespace Qyrenx.Business.Services.PickupServices
 
         Task<bool> pickupVerificationofVendor(Guid pid, string otp);
 
+        Task<VendorCostView> GetSeviceDetialsByPickup(Guid userid, Guid pickupid);
 
+        Task<ICollection<PickUpDto>> GetPickupsUserId(Guid id);
+
+
+        Task<string> UserApproveService(Guid Vc_id);
     }
 }

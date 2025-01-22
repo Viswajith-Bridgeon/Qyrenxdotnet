@@ -13,5 +13,7 @@ namespace Qyrenx.Dataccess.DbAccess.GadgetRepo
         Task<bool> Addgadget(Guid id, Gadget dto, User user, string gadgetimg);
         Task<List<Gadget>> Getgadgets();
         Task<Gadget> GetordergadgetsById(Guid id);
+
+        Task<List<Gadget>> GetgadgetsByUserId(Guid id);
     }
 }

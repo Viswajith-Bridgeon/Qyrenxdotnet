@@ -28,11 +28,11 @@ namespace Qyrenx.Dataccess.DbAccess.StatusRepo
                 throw new Exception(ex.InnerException.Message);
             }
         }
-        public async Task<Status> GetStatusByPickId(Guid id)
+        public async Task<List<Status>> GetStatusByPickId(Guid id)
         {
             try
             {
-                var data = await _context.Status.FirstOrDefaultAsync(p=>p.PickupId==id);
+                var data = await _context.Status.Where(p=>p.PickupId==id).ToListAsync();
                 return data;
             }
             catch (Exception ex)

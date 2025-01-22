@@ -43,5 +43,18 @@ namespace Qyrenx.Dataccess.DbAccess.Pickuprep
         }
 
 
+        public async Task<Pickup> GetPickupByGadId(Guid gadId)
+        {
+            try
+            {
+                var data = await _context.Pickups.FirstOrDefaultAsync(p => p.GadgetId == gadId);
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+
     }
 }

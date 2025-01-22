@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Qyrenx.Business.DTOs.Deliverypersons
 {
-    public class PickupDto
+    public class PickupDeliveryDto
     {
         public Guid Id {  get; set; }
         public Guid UserId { get; set; }

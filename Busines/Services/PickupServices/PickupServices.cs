@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Qyrenx.Business.DTOs;
 using Qyrenx.Business.DTOs.Deliverypersons;
+using Qyrenx.Business.DTOs.PickUpDtos;
 using Qyrenx.Business.DTOs.VendorDtos;
 using Qyrenx.Business.Services.EmailServices;
 using Qyrenx.Dataccess.ApplicationDbContext;
@@ -13,6 +14,7 @@ using Qyrenx.Dataccess.DbAccess.GadgetRepo;
 using Qyrenx.Dataccess.DbAccess.Pickuprep;
 using Qyrenx.Dataccess.DbAccess.StatusRepo;
 using Qyrenx.Dataccess.DbAccess.UserRepo;
+using Qyrenx.Dataccess.DbAccess.VendorCostRepo;
 using Qyrenx.Dataccess.DbAccess.VendorRepo;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
@@ -36,7 +38,8 @@ namespace Qyrenx.Business.Services.PickupServices
         private readonly IVendorRepo _vendorRepo;
         private readonly QyrenxContext _context;
         private readonly IstatusRepo _statusRepo;
-        public PickupServices(IpickupsRepo repo,IMapper mapper, IEmailServices emailServices, IuserRepo userRepo, IgadgetRepo gadgetRepo,IAddress address, IVendorRepo vendorRepo,QyrenxContext context,IstatusRepo statusRepo, IdeliveryRepo deliveryRepo)
+        private readonly IVendorCostRepo _vendorCostRepo;
+        public PickupServices(IpickupsRepo repo,IMapper mapper, IEmailServices emailServices, IuserRepo userRepo, IgadgetRepo gadgetRepo,IAddress address, IVendorRepo vendorRepo,QyrenxContext context,IstatusRepo statusRepo, IdeliveryRepo deliveryRepo, IVendorCostRepo vendorCostRepo)
         {
             _pickupsRepo = repo;    
             _mapper = mapper;
@@ -48,17 +51,18 @@ namespace Qyrenx.Business.Services.PickupServices
             _context = context;
             _statusRepo = statusRepo;
             _deliveryRepo = deliveryRepo;
+            _vendorCostRepo = vendorCostRepo;
 
         }
 
-        public async Task<List<PickupDto>> GetPickupsDeliveryBoys(Guid id)
+        public async Task<List<PickupDeliveryDto>> GetPickupsDeliveryBoys(Guid id)
         {
             try
             {
                 var data = await _pickupsRepo.GetAllPickup();
                 var pick=data.Where(p=>p.DeliveryPersonId==id).ToList();
                 
-                return _mapper.Map<List<PickupDto>>(pick);
+                return _mapper.Map<List<PickupDeliveryDto>>(pick);
             }
             catch(Exception ex) 
             {
@@ -183,14 +187,16 @@ namespace Qyrenx.Business.Services.PickupServices
             {
                 var exist_ven=await _vendorRepo.GetVendorById(ven_id);
                 var StatusCheck=await _statusRepo.GetStatusByPickId(details.PickupId);
-                if (StatusCheck.Statuss == "Checking") 
+                var lastStatus = StatusCheck.OrderByDescending(e => e.CreatedOn).FirstOrDefault();
+
+                if (lastStatus.Statuss == "Start Checking") 
                 {
                     var add_vendor_cost = new VendorCost
                     {
                         VendorId = ven_id,
                         PickupId = details.PickupId,
                         ProblemDescription = details.ProblemDescription,
-                        IsServiceable = details.IsServiceable,
+                        IsVenorServiceable = details.IsVendorServiceable,
                         SaleCost = details.SaleCost,
                         CreatedBy = exist_ven.Name,
                         ServiceCost = details.ServiceCost,
@@ -200,13 +206,12 @@ namespace Qyrenx.Business.Services.PickupServices
                     await _context.SaveChangesAsync();
                     return true;
                 }
-                return false;
-                
+                return false;    
 
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error in GetCoordinatesFromAddress: {ex.Message}", ex);
+                throw new Exception(ex.InnerException.Message);
             }
         }
 
@@ -332,6 +337,99 @@ namespace Qyrenx.Business.Services.PickupServices
             }
         }
 
+
+
+
+        public async Task<VendorCostView> GetSeviceDetialsByPickup(Guid userid, Guid pickupid)
+        {
+            try
+            {
+                var user = await _userRepo.GetUserById(userid);
+                if (user != null)
+                {
+                    var ved_cost = await _vendorCostRepo.GetVendorCostByPickup(pickupid);
+                    var vendor = await _vendorRepo.GetVendorById(ved_cost.VendorId);
+                    var vendor_cost_view = new VendorCostView
+                    {
+                        Id=ved_cost.Id,
+                        VendorName = vendor.Name,
+                        SaleCost = ved_cost.SaleCost,
+                        ProblemDescription = ved_cost.ProblemDescription,
+                        IsVendorServiceable = ved_cost.IsVenorServiceable,
+                        PickupId = ved_cost.PickupId,
+                        VendorPhone = vendor.Mobile,
+                        ServiceCost = ved_cost.ServiceCost,
+                        IsService=ved_cost.IsServices
+                    };
+                    return vendor_cost_view;
+                }
+                return new VendorCostView();
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+
+
+
+        public async Task<ICollection<PickUpDto>> GetPickupsUserId(Guid id)
+        {
+            try
+            {
+                var gadget = await _gadgetRepo.GetgadgetsByUserId(id);
+                List<Pickup> pickids = new List<Pickup>();
+                foreach(var gad in gadget)
+                {
+                    var pick=await _pickupsRepo.GetPickupByGadId(gad.Id);
+                    if(pick!=null)
+                    {
+                        pickids.Add(pick);
+                    }
+                }
+                return _mapper.Map<ICollection<PickUpDto>>(pickids);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+
+
+
+        public async Task<string> UserApproveService(Guid Vc_id)
+        {
+            try
+            {
+                var vendorcost =await _vendorCostRepo.GetVendorCostById(Vc_id);
+                if(vendorcost==null)
+                {
+                    return "invalid Id";
+                }
+                if (vendorcost.IsServices == true)
+                {
+                    return "already approved";
+                }
+                vendorcost.IsServices=true;
+                var status1 = new Status
+                {
+                    PickupId = vendorcost.PickupId,
+                    Statuss = "Start Services"
+                };
+                await _context.Status.AddAsync(status1);
+                await _context.SaveChangesAsync();
+                return "accepted Services";
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
 
     }
 }

@@ -127,7 +127,8 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
             modelBuilder.Entity<Vendor>()
                 .HasMany(e => e.VendorCosts)
                 .WithOne(e => e.Vendors)
-                .HasForeignKey(e => e.VendorId).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(e => e.VendorId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Vendor>()
                 .HasOne(e=>e.VendorAddress)

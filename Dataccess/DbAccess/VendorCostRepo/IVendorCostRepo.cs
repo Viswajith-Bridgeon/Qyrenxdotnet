@@ -12,5 +12,7 @@ namespace Qyrenx.Dataccess.DbAccess.VendorCostRepo
         Task<IEnumerable<VendorCost>> GetAllVendorCost();
         Task<VendorCost> GetVendorCostByPickup(Guid pickid);
 
+        Task<VendorCost> GetVendorCostById(Guid vc_id);
+
     }
 }

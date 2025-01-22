@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Qyrenx.Business.DTOs.PickUpDtos;
 using Qyrenx.Business.DTOs.VendorDtos;
 using Qyrenx.Business.Services.PickupServices;
 using Qyrenx.Business.Services.VendorServices;
@@ -38,6 +39,29 @@ namespace Qyrenx.Controllers
             }
 
         }
+
+
+        [Authorize(Roles = "User")]
+        [HttpGet("ViewPickupOfUser")]
+        public async Task<IActionResult> ViewPickupsUser()
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromClaims();
+                var userId = userIdResult.Value;
+                var res = await _pickupServices.GetPickupsUserId(userId);
+                var resp = new ApiResponse<ICollection<PickUpDto>>(200,"Successfully fetched pickups",res);
+                return Ok(resp);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+
+
         [Authorize(Roles = "DeliveryPerson")]
         [HttpPost("verificationdelivery&user")]
         public async Task<IActionResult> VerifyPickups(Guid PiickId)
@@ -103,6 +127,56 @@ namespace Qyrenx.Controllers
             }
 
         }
+
+        [Authorize(Roles = "User")]
+        [HttpGet("ViewVendorForm")]
+        public async Task<IActionResult> ViewVendorForm(Guid pId)
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromClaims();
+                var userId = userIdResult.Value;
+                var r = await _pickupServices.GetSeviceDetialsByPickup(userId, pId);
+                var res = new ApiResponse<VendorCostView>(200, "succesfully fetched ",r);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+
+        [Authorize(Roles = "User")]
+        [HttpPatch("UserApproveService")]
+        public async Task<IActionResult> UserApproveServices(Guid VendorCost_Id)
+        {
+            try
+            {
+                var r = await _pickupServices.UserApproveService(VendorCost_Id);
+                if(r=="invalid Id")
+                {
+                    var res = new ApiResponse<string>(400,r);
+                    return StatusCode(400, res);
+                }
+                if(r=="already approved")
+                {
+                    var res = new ApiResponse<string>(400, r);
+                    return StatusCode(409, res);
+                }
+                var re = new ApiResponse<string>(200, r);
+                return Ok(re);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+
 
 
         [Authorize(Roles = "DeliveryPerson")]

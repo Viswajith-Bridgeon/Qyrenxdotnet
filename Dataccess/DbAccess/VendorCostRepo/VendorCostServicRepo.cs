@@ -47,5 +47,23 @@ namespace Qyrenx.Dataccess.DbAccess.VendorCostRepo
                 throw new Exception($"Error in GetCoordinatesFromAddress: {ex.Message}", ex);
             }
         }
+
+
+
+
+        public async Task<VendorCost> GetVendorCostById(Guid vc_id)
+        {
+            try
+            {
+                var ven_cost = await _context.VendorCost.FirstOrDefaultAsync(vc => vc.Id==vc_id);
+                if (ven_cost == null)
+                    return new VendorCost();
+                return ven_cost;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in GetCoordinatesFromAddress: {ex.Message}", ex);
+            }
+        }
     }
 }

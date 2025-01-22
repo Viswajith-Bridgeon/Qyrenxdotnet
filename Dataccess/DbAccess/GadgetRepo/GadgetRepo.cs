@@ -66,5 +66,20 @@ namespace Qyrenx.Dataccess.DbAccess.GadgetRepo
             }
         }
 
+
+
+
+        public async Task<List<Gadget>> GetgadgetsByUserId(Guid id)
+        {
+            try
+            {
+                var data = await _context.Gadgets.Where(x => x.UserId == id).ToListAsync();
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
     }
 }

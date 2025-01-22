@@ -4,6 +4,7 @@ using Qyrenx.Business.DTOs.AddressDtos;
 using Qyrenx.Business.DTOs.CategoryDto;
 using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.DTOs.GadgetDtos;
+using Qyrenx.Business.DTOs.PickUpDtos;
 using Qyrenx.Business.DTOs.StatusDtos;
 using Qyrenx.Business.DTOs.VendorActiveDto;
 using Qyrenx.Business.DTOs.VendorDtos;
@@ -34,7 +35,7 @@ namespace Qyrenx.Business.Mapper
             CreateMap<VendorCategoryAddDto,VendorCategory>().ReverseMap();
             CreateMap<DeliveryPerson, DeliveryPersonDto>().ReverseMap();
             CreateMap <GadgetviewDto,Gadget>().ReverseMap();
-            CreateMap<PickupDto, Pickup>().ReverseMap()
+            CreateMap<PickupDeliveryDto, Pickup>().ReverseMap()
                 .ForMember(e => e.UserAddressId, e => e.MapFrom(e => e.Gadget.AddressId))
                 .ForMember(e => e.UserId, e => e.MapFrom(e => e.Gadget.UserId))
                  .ForMember(e => e.Image, e => e.MapFrom(e => e.Gadget.Image))
@@ -46,6 +47,13 @@ namespace Qyrenx.Business.Mapper
                      .ForMember(e => e.ShopOwnerNamw, e => e.MapFrom(e => e.Vendors.Name))
                        .ForMember(e => e.shopAddressId, e => e.MapFrom(e => e.Vendors.VendorAddress.Id))
                                               .ForMember(e => e.ShopNumber, e => e.MapFrom(e => e.Vendors.Mobile));
+
+
+            CreateMap<PickUpDto, Pickup>().ReverseMap()
+                  .ForMember(e => e.UserId, e => e.MapFrom(e => e.Gadget.UserId))
+                     .ForMember(e => e.Image, e => e.MapFrom(e => e.Gadget.Image))
+                 .ForMember(e => e.GadgetName, e => e.MapFrom(e => e.Gadget.GadgetName))
+                  .ForMember(e => e.Description, e => e.MapFrom(e => e.Gadget.Description));
 
 
             CreateMap<PickupVendorDto, Pickup>().ReverseMap()

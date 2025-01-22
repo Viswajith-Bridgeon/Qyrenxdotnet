@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Qyrenx.Dataccess.ApplicationDbContext;
 
@@ -11,9 +12,11 @@ using Qyrenx.Dataccess.ApplicationDbContext;
 namespace Qyrenx.Dataccess.Migrations
 {
     [DbContext(typeof(QyrenxContext))]
-    partial class QyrenxContextModelSnapshot : ModelSnapshot
+    [Migration("20250121105121_vendorcost2")]
+    partial class vendorcost2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -556,9 +559,9 @@ namespace Qyrenx.Dataccess.Migrations
                         new
                         {
                             Id = new Guid("a1f5d5da-e94d-44f1-a8c3-b60f42101a01"),
-                            CreatedOn = new DateTime(2025, 1, 21, 12, 57, 48, 455, DateTimeKind.Utc).AddTicks(4549),
+                            CreatedOn = new DateTime(2025, 1, 21, 10, 51, 21, 100, DateTimeKind.Utc).AddTicks(8469),
                             Email = "admin@gmail.com",
-                            HashPassword = "$2a$11$iT3AZ4.D5QrAVOwZsWY18O.Q6WwjQrWDVUaynZXRuFH1DSq7EkiWG",
+                            HashPassword = "$2a$11$6njRW3jxU2qdaU9D1eWJXeTn5cYBPRANzmFneRcW3JfDhN9V5WlIm",
                             IsBlock = false,
                             IsDelete = false,
                             Mobile = 1234567890,
@@ -829,12 +832,17 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<Guid>("VendorId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid>("VendorsCostId")
+                        .HasColumnType("char(36)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PickupId")
                         .IsUnique();
 
                     b.HasIndex("VendorId");
+
+                    b.HasIndex("VendorsCostId");
 
                     b.ToTable("VendorCost");
                 });
@@ -1063,9 +1071,17 @@ namespace Qyrenx.Dataccess.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Qyrenx.Dataccess.Models.Entities.VendorCost", "VendorsCost")
+                        .WithMany()
+                        .HasForeignKey("VendorsCostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Pickups");
 
                     b.Navigation("Vendors");
+
+                    b.Navigation("VendorsCost");
                 });
 
             modelBuilder.Entity("Qyrenx.Dataccess.Models.Entities.VendorOnline", b =>

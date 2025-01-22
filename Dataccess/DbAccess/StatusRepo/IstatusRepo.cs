@@ -10,7 +10,7 @@ namespace Qyrenx.Dataccess.DbAccess.StatusRepo
     public interface IstatusRepo
     {
         Task<List<Status>> GetAllStatus();
-        Task<Status> GetStatusByPickId(Guid id);
+        Task<List<Status>> GetStatusByPickId(Guid id);
 
     }
 }
