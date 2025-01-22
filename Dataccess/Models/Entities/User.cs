@@ -1,0 +1,16 @@
+﻿namespace Qyrenx.Dataccess.Models.Entities
+{
+    public class User: AuditableEntityJwt
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public int Mobile { get; set; }
+        public string HashPassword { get; set; }
+        public bool IsBlock { get; set; } = false;
+        public string Role { get; set; } = "User";
+        public ICollection<Gadget> Gadgets { get; set; }
+        public ICollection<UserSecurityPayment> UserSecurityPayment { get; set; }
+        public  ICollection<Address> Address { get; set; }
+    }
+}
