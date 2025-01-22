@@ -56,5 +56,19 @@ namespace Qyrenx.Dataccess.DbAccess.Pickuprep
             }
         }
 
+
+        public async Task<List<Pickup>> GetPickupByVendorId(Guid vid)
+        {
+            try
+            {
+                var data = await _context.Pickups.Where(p => p.VendorId==vid).Include(p => p.Gadget).ThenInclude(v => v.Users).Include(v => v.Vendors).ThenInclude(a => a.VendorAddress).Include(e => e.DeliveryPersons).ToListAsync(); ;
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
+
     }
 }

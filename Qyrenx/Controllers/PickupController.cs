@@ -256,6 +256,54 @@ namespace Qyrenx.Controllers
             }
         }
 
+        [Authorize(Roles = "DeliveryPerson")]
+        [HttpPost("VendorVerficationOtp")]
+        public async Task<IActionResult> VendorOtpVerify(Guid PiickId, string otp)
+        {
+            try
+            {
+
+             
+                var data = await _pickupServices.pickupVerificationofVendor(PiickId, otp);
+                if (data)
+                {
+                    var res = new ApiResponse<bool>(200, "successfully completed otp verification", data);
+                    return Ok(res);
+                }
+                var resp = new ApiResponse<bool>(400, "wrong otp", data);
+                return BadRequest(resp);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+
+        [Authorize(Roles = "Vendor")]
+        [HttpGet("UserApprovedService")]
+        public async Task<IActionResult> UserApprovedService()
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromClaims();
+                var userId = userIdResult.Value;
+                var data = await _pickupServices.UserApprovedService(userId);
+                if (data.Any()==null)
+                {
+                    var res = new ApiResponse<ICollection<PickUpDto>>(400, "no Aprroved Service", data);
+                    return BadRequest(res);
+                }
+                var re = new ApiResponse<ICollection<PickUpDto>>(200, "successfully fetch all approved pickups", data);
+                   return Ok(re);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
 
 
 
@@ -275,27 +323,7 @@ namespace Qyrenx.Controllers
 
 
 
-        [Authorize(Roles = "DeliveryPerson")]
-        [HttpPost("VendorVerficationOtp")]
-        public async Task<IActionResult> VendorOtpVerify(Guid PiickId, string otp)
-        {
-            try
-            {
-                var data = await _pickupServices.pickupVerificationofVendor(PiickId, otp);
-                if(data)
-                {
-                    var res = new ApiResponse<bool>(200,"successfully completed otp verification" ,data);
-                    return Ok(res);
-                }
-                var resp = new ApiResponse<bool>(400, "wrong otp", data);
-                return BadRequest(resp);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.InnerException.Message);
-            }
-
-        }
+      
 
     }
     }

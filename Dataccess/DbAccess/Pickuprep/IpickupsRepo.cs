@@ -13,5 +13,7 @@ namespace Qyrenx.Dataccess.DbAccess.Pickuprep
         Task<Pickup> GetPickupById(Guid id);
 
         Task<Pickup> GetPickupByGadId(Guid gadId);
+
+        Task<List<Pickup>> GetPickupByVendorId(Guid vid);
     }
 }
