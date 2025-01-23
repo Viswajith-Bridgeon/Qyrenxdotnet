@@ -307,8 +307,6 @@ namespace Qyrenx.Controllers
 
 
 
-
-
         private ActionResult<Guid> GetUserIdFromClaims()
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

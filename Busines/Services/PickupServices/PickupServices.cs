@@ -431,9 +431,7 @@ namespace Qyrenx.Business.Services.PickupServices
             }
         }
 
-
-
-
+      
 
         public async Task<ICollection<PickUpDto>> UserApprovedService(Guid Vcid)
         {
