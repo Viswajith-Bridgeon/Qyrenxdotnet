@@ -13,7 +13,7 @@ namespace Qyrenx.Business.Models.DTOs.UserDTO
         public string? Email { get; set; }
 
         [Required(ErrorMessage = "number is required")]
-        public int Mobile { get; set; }
+        public string Mobile { get; set; }
 
         [Required]
         [MinLength(8)]

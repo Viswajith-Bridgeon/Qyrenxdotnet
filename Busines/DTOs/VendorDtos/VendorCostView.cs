@@ -11,7 +11,7 @@ namespace Qyrenx.Business.DTOs.VendorDtos
         public Guid Id { get; set; }
         public Guid PickupId { get; set; }
         public string VendorName { get; set; }
-        public int VendorPhone { get; set; }
+        public string VendorPhone { get; set; }
         public string ProblemDescription { get; set; }
         public bool IsVendorServiceable { get; set; } = true;
         public decimal ServiceCost { get; set; }

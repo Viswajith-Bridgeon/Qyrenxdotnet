@@ -9,7 +9,7 @@ namespace Qyrenx.Business.Models.DTOs.UserDTO
         public string? Name { get; set; }
 
         [Required(ErrorMessage = "mobile is required")]
-        public int Mobile { get; set; }
+        public string Mobile { get; set; }
 
 
 
