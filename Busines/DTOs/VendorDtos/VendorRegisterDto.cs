@@ -10,7 +10,7 @@ namespace Qyrenx.Business.Models.DTOs.VendorDtos
 		[EmailAddress]
 		public string? Email { get; set; }
 		[Required]
-		public int? Mobile { get; set; }
+		public string Mobile { get; set; }
 		[Required]
 		public string? ShopeName { get; set; }
 		[Required]

@@ -16,7 +16,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
         Task<string> Register(DeliveryPersonRegDto regdto,IFormFile license);
         Task<AllLoginresponses> Login(DeliveryPersonLoginDto logindto);
         Task<bool> verify(string mail);
-        Task<IEnumerable<DeliveryPersonDto>>GetAllDeliveryPeresons();
+        Task<IEnumerable<DeliveryPerson>>GetAllDeliveryPeresons();
         Task<DeliveryPersonDto> GetDeliveryPeresonById(Guid Id);
         Task<bool>BlockOrUnblock(Guid Id);
         Task<DeliveryPersonOnline> DeliveryPersonActivity(Guid id,decimal latt, decimal lonn);
