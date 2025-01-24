@@ -18,6 +18,7 @@ namespace Qyrenx.Business.Services.VendorServices
         Task<bool> VerificationVendor(Guid id);
         Task<Guid> VendorAssign(Guid catid);
         Task<bool> CategoryAddvendor(Guid id, Guid catid);
+        Task<VendorCategory> ViewCategory(Guid id);
         Task <VendorOnline> VendorActivity(Guid id);
         Task<Guid> GetNearestVendorPerson(Guid id);
         Task<bool> ResetPassword(string Email, string password);

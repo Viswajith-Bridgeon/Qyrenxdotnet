@@ -204,6 +204,31 @@ namespace Qyrenx.present.Controllers
 
         }
 
+
+        [Authorize(Roles = "Vendor")]
+        [HttpGet("viewcategory")]
+        public async Task<IActionResult>VendorCatogeries()
+        {
+            try
+            {
+                var userIdResult = GetUserIdFromClaims();
+                var userId = userIdResult.Value;
+                var res = await _vendorServices.ViewCategory(userId);
+                if (res!=null)
+                {
+                    return Ok(res);
+                }
+                return BadRequest("Error");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+
+
         private ActionResult<Guid> GetUserIdFromClaims()
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
