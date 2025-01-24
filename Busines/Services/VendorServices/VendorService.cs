@@ -337,7 +337,6 @@ namespace Qyrenx.Business.Services.VendorServices
                     return false;
                 }
 
-
                 var category = new VendorCategoryAddDto
                 {
                     VendorId = id,
@@ -356,7 +355,15 @@ namespace Qyrenx.Business.Services.VendorServices
             }
         }
 
-
+        public async Task <VendorCategory>ViewCategory(Guid id)
+        {
+            var data=await _context.VendorCategories.FirstOrDefaultAsync(c => c.VendorId == id);
+            if(data == null) 
+            { 
+                return null; 
+            }
+            return data;
+        }
         public async Task<VendorOnline> VendorActivity(Guid id)
         {
             try
