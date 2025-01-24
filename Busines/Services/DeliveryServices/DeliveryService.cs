@@ -175,7 +175,6 @@ namespace Qyrenx.Business.Services.DeliveryServices
                     {
                         Id = deliveryperson.Id,
                         Name = deliveryperson.Name,
-                        DrivingLicense = deliveryperson.DrivingLicense,
                         Email = deliveryperson.Email,
                         IsBlock = deliveryperson.IsBlock,
                         IsVerified = deliveryperson.IsVerified,

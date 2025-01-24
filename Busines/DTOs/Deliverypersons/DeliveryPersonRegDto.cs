@@ -6,10 +6,7 @@ namespace Qyrenx.Business.Models.DTOs.Deliverypersons
     {
         [Required]
         public string Name { get; set; }
-
-        [Required]
-
-        public string DrivingLicense { get; set; }
+     
         [Required]
         [EmailAddress]
         public string Email { get; set; }
