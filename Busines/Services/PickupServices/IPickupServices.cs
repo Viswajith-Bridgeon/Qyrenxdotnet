@@ -3,6 +3,7 @@ using Qyrenx.Business.DTOs;
 using Qyrenx.Business.DTOs.Deliverypersons;
 using Qyrenx.Business.DTOs.PickUpDtos;
 using Qyrenx.Business.DTOs.VendorDtos;
+using Qyrenx.Dataccess.ApiResponses;
 using Qyrenx.Dataccess.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -36,5 +37,6 @@ namespace Qyrenx.Business.Services.PickupServices
         Task<string> UserApproveService(Guid Vc_id);
 
         Task<ICollection<PickUpDto>> UserApprovedService(Guid Vcid);
+       
     }
 }

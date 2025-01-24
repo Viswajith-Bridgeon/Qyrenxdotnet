@@ -45,7 +45,7 @@ namespace Qyrenx.Dataccess.ApplicationDbContext
                 HashPassword = BCrypt.Net.BCrypt.HashPassword("admin@1234"),
                 Role = "Admin",
                 IsBlock = false,
-                Mobile = 1234567890,
+                Mobile = "1234567890",
             });
 
 

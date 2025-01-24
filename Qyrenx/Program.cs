@@ -126,6 +126,15 @@ namespace Qyrenx
                     }
                 });
             });
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                    policy.SetIsOriginAllowed(_ => true) 
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials());
+            });
+
             // Configure JWT Authentication
             builder.Services.AddAuthentication(options =>
             {
@@ -133,6 +142,7 @@ namespace Qyrenx
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
             })
+
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -149,13 +159,15 @@ namespace Qyrenx
             });
 
             var app = builder.Build();
+            app.UseCors("AllowAll");
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(); 
+         
             }
+            app.UseSwagger();
+            app.UseSwaggerUI();
             app.MapHub<NotificationHub>("/notificationHub");
             app.UseStaticFiles();
             app.UseHttpsRedirection();

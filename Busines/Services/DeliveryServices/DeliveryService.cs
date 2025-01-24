@@ -137,14 +137,14 @@ namespace Qyrenx.Business.Services.DeliveryServices
         }
 
 
-        public async Task<IEnumerable<DeliveryPersonDto>> GetAllDeliveryPeresons()
+        public async Task<IEnumerable<DeliveryPerson>> GetAllDeliveryPeresons()
         {
             try
             {
                 var deliverypersons =  await _deliveryRepo.GetAllDeliveryPeresons();
                 if(deliverypersons != null)
                 {
-                    return deliverypersons.Select(p => new DeliveryPersonDto
+                    return deliverypersons.Select(p => new DeliveryPerson
                     {
                         Id = p.Id,
                         Name = p.Name,
@@ -156,7 +156,7 @@ namespace Qyrenx.Business.Services.DeliveryServices
                         Role= p.Role
                     }).ToList();
                 }
-                return Enumerable.Empty<DeliveryPersonDto>();  
+                return Enumerable.Empty<DeliveryPerson>();  
             }
             catch (Exception ex)
             {
