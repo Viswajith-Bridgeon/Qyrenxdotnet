@@ -193,9 +193,9 @@ namespace Qyrenx.present.Controllers
                 var res = await _vendorServices.CategoryAddvendor(userId, catid);
                 if (res)
                 {
-                    return Ok("Category Added Successfully");
+                    return Ok (new ApiResponse<string>(200,"user have categories",res.ToString(),null));
                 }
-                return BadRequest("Error");
+                return StatusCode(500,new ApiResponse<string>(200,"user doesnot have category",null,"add category first"));
             }
             catch (Exception ex)
             {
