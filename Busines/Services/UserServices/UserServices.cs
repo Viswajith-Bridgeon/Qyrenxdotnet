@@ -55,8 +55,8 @@ namespace Qyrenx.Business.Services.UserServices
                 if (emailverify)
                 {
 
-                    var haspassword = BCrypt.Net.BCrypt.HashPassword(user.HashPassword);
-                    user.HashPassword = haspassword;
+                    var haspassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+                    user.Password = haspassword;
 
                     var u = new User
                     {

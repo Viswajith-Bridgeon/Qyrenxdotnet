@@ -19,7 +19,7 @@ namespace Qyrenx.Business.Models.DTOs.UserDTO
         [MinLength(8)]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
         ErrorMessage = "Password must contain at least one letter, one number, and one special character.")]
-        public string? HashPassword { get; set; }
+        public string? Password { get; set; }
 
         [Required]
         public string? otp { get; set; }
