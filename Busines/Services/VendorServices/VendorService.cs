@@ -511,14 +511,19 @@ namespace Qyrenx.Business.Services.VendorServices
         {
             try
             {
-                var status = await _statusRepo.GetAllStatus();
-                var allpickup=await _pickupsRepo.GetAllPickup();
-                var pickup=allpickup.FirstOrDefault(p=>p.Id==pickupid);
-                var is_status = status.Where(c => c.PickupId == pickupid && c.Statuss == "Service Completed").FirstOrDefault();
+                var status = await _statusRepo.GetStatusByPickId(pickupid);
+                var pickup=await _pickupsRepo.GetPickupById(pickupid);
+                var is_status = status.Where(c => c.PickupId == pickupid && c.Statuss == "Start Services").FirstOrDefault();
                 if(is_status!=null)
                 {
                     var getneaestdel_id = await GetNearestDeliveryPerson(venid);
                     pickup.ReturnDeliveryPersonId= getneaestdel_id;
+                    var statu = new Status
+                    {
+                        PickupId = pickupid,
+                        Statuss = "Completed Services"
+                    };
+                    await _context.Status.AddAsync(statu);
                     await _context.SaveChangesAsync();
                     return true;
                 }

@@ -525,8 +525,8 @@ namespace Qyrenx.Dataccess.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("Mobile")
-                        .HasColumnType("int");
+                    b.Property<long>("Mobile")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -556,12 +556,12 @@ namespace Qyrenx.Dataccess.Migrations
                         new
                         {
                             Id = new Guid("a1f5d5da-e94d-44f1-a8c3-b60f42101a01"),
-                            CreatedOn = new DateTime(2025, 1, 22, 6, 23, 56, 840, DateTimeKind.Utc).AddTicks(540),
+                            CreatedOn = new DateTime(2025, 1, 23, 11, 49, 31, 479, DateTimeKind.Utc).AddTicks(4753),
                             Email = "admin@gmail.com",
-                            HashPassword = "$2a$11$e7b3jN9uSF/RBa3NV240k.EYhRwLJ7aO17NTa2aEvDv1x2pO1oxei",
+                            HashPassword = "$2a$11$3IDdG9h4f8ZK1rk6bRTW2O0YpiI3VPQs/jRRfowINVrt4gkeWhibW",
                             IsBlock = false,
                             IsDelete = false,
-                            Mobile = 1234567890,
+                            Mobile = 1234567890L,
                             Name = "Admin",
                             Role = "Admin"
                         });

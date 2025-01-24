@@ -287,9 +287,8 @@ namespace Qyrenx.Controllers
         {
             try
             {
-                var userIdResult = GetUserIdFromClaims();
-                var userId = userIdResult.Value;
-                var data = await _pickupServices.UserApprovedService(userId);
+                var userdId = Guid.Parse(HttpContext.Items["Id"].ToString());
+                var data = await _pickupServices.UserApprovedService(userdId);
                 if (data.Any()==null)
                 {
                     var res = new ApiResponse<ICollection<PickUpDto>>(400, "no Aprroved Service", data);
