@@ -111,7 +111,7 @@ namespace Qyrenx.present.Controllers
             return Ok(new ApiResponse<List<DeliveryPersonOnlineDto>>(200,"success",data,null));
         }
 
-        [HttpGet("getDeliverpersonActivity")]
+        [HttpPost("getDeliverpersonActivity")]
         public async Task<ActionResult<DeliveryPersonOnline>>GetDeliveryPersonActivity(decimal lat,decimal lon)
         {
             var id = Guid.Parse(HttpContext.Items["Id"].ToString());
