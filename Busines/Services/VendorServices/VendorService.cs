@@ -355,9 +355,9 @@ namespace Qyrenx.Business.Services.VendorServices
             }
         }
 
-        public async Task <VendorCategory>ViewCategory(Guid id)
+        public async Task <List<VendorCategory>>ViewCategory(Guid id)
         {
-            var data=await _context.VendorCategories.FirstOrDefaultAsync(c => c.VendorId == id);
+            var data=await _context.VendorCategories.Where(c => c.VendorId == id).ToListAsync();
             if(data == null) 
             { 
                 return null; 
