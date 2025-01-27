@@ -103,7 +103,7 @@ namespace Qyrenx.present.Controllers
                 {
                     return StatusCode(403, new ApiResponse<string>(403, "Forbiden", null, "User is blocked by admin"));
                 }
-                if (res.Error == "Invalid password")
+                if (res.Error == "Invalid Password")
                 {
                     return BadRequest(new ApiResponse<string>(400, "BadRequest", null, res.Error));
                 }

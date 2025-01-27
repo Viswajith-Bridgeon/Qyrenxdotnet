@@ -14,5 +14,7 @@
         Task<bool>  UserToDeliverPersonVerifyOtp(string UserEmail,string otp);
 
         Task<bool> SendOtpForVendorVerification(string vendorEmail);
+
+
     }
 }

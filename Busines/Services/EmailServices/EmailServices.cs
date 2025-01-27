@@ -418,11 +418,7 @@ namespace Qyrenx.Business.Services.EmailServices
         {
             try
             {
-                //var user = await _context.Vendors.FirstOrDefaultAsync(x => x.Email == toAddress);
-                //if (user == null)
-                //{
-                //    throw new Exception("Vendor with the specified email address not found.");
-                //}
+                
 
                 var emailSettings = _configuration.GetSection("EmailSettings");
 
@@ -481,6 +477,10 @@ namespace Qyrenx.Business.Services.EmailServices
             return emailbody;
         }
 
+
+
+
+      
 
 
     }

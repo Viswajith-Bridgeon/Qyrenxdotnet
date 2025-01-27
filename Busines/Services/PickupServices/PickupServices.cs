@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 
 namespace Qyrenx.Business.Services.PickupServices
 {
@@ -454,6 +455,41 @@ namespace Qyrenx.Business.Services.PickupServices
 
                 }
                 return new List<PickUpDto>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+
+        public async Task<ICollection<PickupReturnDto>> GetVendorReturn(Guid id)
+        {
+            try
+            {
+                var pickups= await _pickupsRepo.GetPickupByDevilveryReturnId(id);
+                return _mapper.Map<ICollection<PickupReturnDto>>(pickups);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+
+
+        public async Task<bool> VerifyPickupReturnDeliveryboyToVendor(Guid dc_id, Guid pid)
+        {
+            try
+            {
+                var pickup= await _pickupsRepo.GetPickupById(pid);
+                if (pickup == null)
+                {
+                    return false;
+                }
+                var vendor=await _pickupsRepo.GetVendorByPickupId(pid);
+                bool verify = await _emailServices.SendOtpForVendorVerification(vendor.Email);
+                 return verify;
             }
             catch (Exception ex)
             {

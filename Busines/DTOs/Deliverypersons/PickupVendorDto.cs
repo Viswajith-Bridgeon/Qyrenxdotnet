@@ -16,7 +16,7 @@ namespace Qyrenx.Business.DTOs.Deliverypersons
 
         public string DeliveryBoyName { get; set; }
 
-        public int DeliveryBoyNumber { get; set; }
+        public string DeliveryBoyNumber { get; set; }
     }
 
 }

@@ -49,6 +49,20 @@ namespace Qyrenx.Business.Mapper
                                               .ForMember(e => e.ShopNumber, e => e.MapFrom(e => e.Vendors.Mobile));
 
 
+            CreateMap<PickupReturnDto, Pickup>().ReverseMap()
+              .ForMember(e => e.UserAddressId, e => e.MapFrom(e => e.Gadget.AddressId))
+              .ForMember(e => e.UserId, e => e.MapFrom(e => e.Gadget.UserId))
+               .ForMember(e => e.Image, e => e.MapFrom(e => e.Gadget.Image))
+               .ForMember(e => e.GadgetName, e => e.MapFrom(e => e.Gadget.GadgetName))
+                .ForMember(e => e.Description, e => e.MapFrom(e => e.Gadget.Description))
+                .ForMember(e => e.UserName, e => e.MapFrom(e => e.Gadget.Users.Name))
+                 .ForMember(e => e.UserNumber, e => e.MapFrom(e => e.Gadget.Users.Mobile))
+                  .ForMember(e => e.ShopName, e => e.MapFrom(e => e.Vendors.ShopeName))
+                   .ForMember(e => e.ShopOwnerNamw, e => e.MapFrom(e => e.Vendors.Name))
+                     .ForMember(e => e.shopAddressId, e => e.MapFrom(e => e.Vendors.VendorAddress.Id))
+                                            .ForMember(e => e.ShopNumber, e => e.MapFrom(e => e.Vendors.Mobile));
+
+
             CreateMap<PickUpDto, Pickup>().ReverseMap()
                   .ForMember(e => e.UserId, e => e.MapFrom(e => e.Gadget.UserId))
                      .ForMember(e => e.Image, e => e.MapFrom(e => e.Gadget.Image))
