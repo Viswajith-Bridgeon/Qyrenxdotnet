@@ -305,6 +305,54 @@ namespace Qyrenx.Controllers
         }
 
 
+        [Authorize(Roles = "DeliveryPerson")]
+        [HttpGet("ViewVendorReturns")]
+        public async Task<IActionResult> ViewVendorReturns()
+        {
+            try
+            {
+                var userdId = Guid.Parse(HttpContext.Items["Id"].ToString());
+
+                var data = await _pickupServices.GetVendorReturn(userdId);
+                var responses = new ApiResponse<ICollection<PickupReturnDto>>(200, "successfully fetch all returns", data);
+                return Ok(responses);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+        [Authorize(Roles = "DeliveryPerson")]
+        [HttpGet("VerificationReturnDeliveryperson&vendor")]
+        public async Task<IActionResult> VerificationReturnDeliverypersonAndVendor(Guid pid)
+        {
+            try
+            {
+                var userdId = Guid.Parse(HttpContext.Items["Id"].ToString());
+
+                var data = await _pickupServices.VerifyPickupReturnDeliveryboyToVendor(userdId,pid);
+                if(!data)
+                {
+                    var responses = new ApiResponse<bool>(200, "somwthing wnt wrong", data);
+                    return NotFound(responses);
+                }
+                var response = new ApiResponse<bool>(200, "otp sending", data);
+                return Ok(response);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException.Message);
+            }
+
+        }
+
+
+
+
+
 
         private ActionResult<Guid> GetUserIdFromClaims()
         {
