@@ -203,6 +203,14 @@ namespace Qyrenx.Business.Services.PickupServices
                     };
                     var vendor_cast = _mapper.Map<VendorCost>(add_vendor_cost);
                     await _context.VendorCost.AddAsync(vendor_cast);
+                   StatusCheck.Add(new Status
+                    {
+                        PickupId = details.PickupId,
+                        Statuss = "Waiting for user response",
+                        CreatedBy = exist_ven.Name,
+                        CreatedOn = DateTime.Now
+
+                    });
                     await _context.SaveChangesAsync();
                     return true;
                 }
