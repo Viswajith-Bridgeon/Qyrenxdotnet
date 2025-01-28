@@ -344,7 +344,7 @@ namespace Qyrenx.present.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("vendorassignreturndelivery")]
         public async Task<IActionResult>VendorAssignDeliveryperson(Guid pickupid)
         {
             try
